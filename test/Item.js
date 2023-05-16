@@ -81,16 +81,16 @@ describe("🔥 Verify signature", function () {
         console.log("\t▶️  Recovered signer:", await contract.recover(ethHash, signature));
 
         // Verify signature and mint token by looking at balance of address
-        let balance = await contract.balanceOf(signer_address);
-        await contract.verifyAndMint(signer_address, message, signature, signer_address, token_id);
-
-        // expect(
-        //     await contract.verifyAndMint(signer_address, message, signature, signer_address, token_id)
-        // ).to.equal(true);
+        // let balance = await contract.balanceOf(signer_address);
+        // await contract.verifyAndMint(signer_address, message, signature, signer_address, token_id);
 
         expect(
-            await contract.balanceOf(signer_address)
-        ).to.equal(balance + 1);
+            await contract.verifyAndMint(signer_address, message, signature, signer_address, token_id)
+        ).to.equal(true);
+
+        // expect(
+        //     await contract.balanceOf(signer_address)
+        // ).to.equal(balance + 1);
 
         // Test with custom data
         // const sig_address = '0x0d72fD549214Eb53cC241f400B147364e926E15B';

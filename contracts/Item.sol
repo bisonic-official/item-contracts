@@ -96,8 +96,9 @@ contract Item is ERC721 {
         bytes memory _signature,
         address to,
         uint256 tokenId
-    ) public returns (bool success) {
+    ) public returns (bool) {
         bool verified = this.verify(_signer, _message, _signature);
+        require(verified == true, "Invalid signer!");
 
         if (verified) {
             mint(to, tokenId);
