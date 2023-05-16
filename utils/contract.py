@@ -30,7 +30,7 @@ def connect_to_web3(network='goerli', api_key=None):
         url = 'https://arb-goerli.g.alchemy.com/v2/' + api_key
 
     w3 = Web3(Web3.HTTPProvider(url))
-    status = w3.isConnected()
+    status = w3.is_connected()
 
     return w3, status
 

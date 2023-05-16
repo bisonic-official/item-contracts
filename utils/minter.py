@@ -52,12 +52,116 @@ def mint(w3, contract, account_address, private_key, token_id):
 
     logger = logging.getLogger('minter')
 
-    txn = contract.functions.mint(account_address, token_id).buildTransaction({
-        'nonce':
-        w3.eth.get_transaction_count(account_address),
-        'gas':
-        1000000000
-    })
+    txn = contract.functions.mint(account_address, token_id).build_transaction(
+        {
+            'nonce': w3.eth.get_transaction_count(account_address),
+            'gas': 100000000
+        })
+
+    # Sign the transaction
+    txn_signed = w3.eth.account.sign_transaction(txn, private_key)
+
+    # Send the transaction and wait for the transaction receipt
+    txn_hash = w3.eth.send_raw_transaction(txn_signed.rawTransaction)
+    txn_receipt = w3.eth.wait_for_transaction_receipt(txn_hash)
+    txn_receipt = txn_receipt.transactionHash.hex()
+
+    log_msg = f"TXN successful with hash: { txn_receipt }"
+    logger.info(log_msg)
+
+    return txn_receipt
+
+
+def verify_and_mint(w3, contract, signer_address, private_key, message_hash,
+                    signature, to_address, token_id):
+    """Mint an NFT.
+
+    Parameters
+    ----------
+    w3 : Web3
+        The web3 object.
+    contract
+        The contract object.
+    signer_address : str
+        The account address of signer.
+    private_key : str
+        The private key.
+    message_hash : str
+        The hashed message.
+    signature : str
+        The signature.
+    to_address : str
+        The new owner address.
+    token_id : int
+        The token ID.
+    
+    Returns
+    -------
+    txn : dict
+        The transaction dictionary.
+    """
+
+    logger = logging.getLogger('minter')
+
+    txn = contract.functions.verifyAndMint(
+        signer_address, message_hash, signature, to_address,
+        token_id).build_transaction({
+            'nonce':
+            w3.eth.get_transaction_count(signer_address),
+            'gas':
+            100000000
+        })
+
+    # Sign the transaction
+    txn_signed = w3.eth.account.sign_transaction(txn, private_key)
+
+    # Send the transaction and wait for the transaction receipt
+    txn_hash = w3.eth.send_raw_transaction(txn_signed.rawTransaction)
+    txn_receipt = w3.eth.wait_for_transaction_receipt(txn_hash)
+    txn_receipt = txn_receipt.transactionHash.hex()
+
+    log_msg = f"TXN successful with hash: { txn_receipt }"
+    logger.info(log_msg)
+
+    return txn_receipt
+
+
+def transfer(w3, contract, from_address, to_address, private_key, token_id):
+    """Mint an NFT.
+
+    Parameters
+    ----------
+    w3 : Web3
+        The web3 object.
+    contract
+        The contract object.
+    from_address : str
+        The from address.
+    to_address : str
+        The to address.
+    private_key : str
+        The private key.
+    token_id : int
+        The token ID.
+    
+    Returns
+    -------
+    txn : dict
+        The transaction dictionary.
+    """
+
+    logger = logging.getLogger('minter')
+
+    from_address = w3.to_checksum_address(from_address.lower())
+    to_address = w3.to_checksum_address(to_address.lower())
+
+    txn = contract.functions.safeTransferFrom(
+        from_address, to_address, token_id).build_transaction({
+            'nonce':
+            w3.eth.get_transaction_count(from_address),
+            'gas':
+            100000000
+        })
 
     # Sign the transaction
     txn_signed = w3.eth.account.sign_transaction(txn, private_key)

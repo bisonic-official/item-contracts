@@ -28,6 +28,7 @@ def main():
 
         # Obtain a token ID from URL
         token_id_str = get_token_id(config['service']['url'])
+        # token_id_str = '6463a74b20b59d8ada655875'
         token_id = int(token_id_str, 16)
 
         token_msg = f'Obtained Token ID: {token_id_str} / {token_id}'

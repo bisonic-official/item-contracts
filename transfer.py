@@ -13,7 +13,7 @@ def main():
     logger = setup_custom_logger()
 
     # Connect to web3
-    w3, status = connect_to_web3(network='goerli-arbitrum',
+    w3, status = connect_to_web3(network=config['network']['network'],
                                  api_key=config['network']['api_key'])
 
     if status:
@@ -26,15 +26,15 @@ def main():
                                  config['contract']['abi'])
 
         # Obtain a token ID from URL
-        token_id = 1  # TODO: Add token_id
+        token_id = 31068974659341763119434520693  # TODO: Add token_id here!
 
         token_msg = f'Obtained Token ID: {token_id}'
         print(f'[INFO] {token_msg}')
         logger.info(token_msg)
 
         # Mint an NFT
-        from_address = ''
-        to_address = ''
+        from_address = '0x0d72fD549214Eb53cC241f400B147364e926E15B'
+        to_address = '0x030b1cddf635e9e71ad70b8668e235e8ec3c67c4'
         txn_receipt = transfer(w3, contract, from_address, to_address,
                                config['account']['private_key'], token_id)
 
