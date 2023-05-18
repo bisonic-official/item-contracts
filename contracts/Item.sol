@@ -5,6 +5,7 @@
 pragma solidity ^0.8.18;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
 /* Signature Verification
 
@@ -21,10 +22,25 @@ How to Sign and Verify
 */
 
 // This is the main building block for smart contracts.
-contract Item is ERC721 {
+contract Item is ERC721, Ownable {
+    // Signer variable
+    address public signer;
+
     // This is the constructor whose code is
     // run only when the contract is created.
-    constructor() ERC721("Item", "ITM") {}
+    constructor() ERC721("Item", "ITM") {
+        signer = 0x0d72fD549214Eb53cC241f400B147364e926E15B;
+    }
+
+    // Set signer
+    function setSigner(address _signer) external onlyOwner {
+        signer = _signer;
+    }
+
+    // Get signer
+    function getSigner() external view returns (address) {
+        return signer;
+    }
 
     // Verify signature
     function verify(
@@ -84,27 +100,31 @@ contract Item is ERC721 {
         }
     }
 
-    // This is the mint function
-    function mint(address to, uint256 tokenId) public {
-        _safeMint(to, tokenId);
-    }
-
     // Verify + mint function
     function verifyAndMint(
-        address _signer,
         string memory _message,
         bytes memory _signature,
         address to,
         uint256 tokenId
-    ) public returns (bool) {
-        bool verified = this.verify(_signer, _message, _signature);
-        require(verified == true, "Invalid signer!");
+    ) public {
+        require(
+            this.verify(signer, _message, _signature) == true,
+            "Invalid signer"
+        );
+        _safeMint(to, tokenId);
+    }
 
-        if (verified) {
-            mint(to, tokenId);
-            return true;
-        } else {
-            return false;
+    // Owner mint function
+    function ownerMint(
+        uint256[] calldata tokenIds,
+        address[] calldata recipients
+    ) external onlyOwner {
+        require(
+            tokenIds.length == recipients.length,
+            "Arrays should have the same size"
+        );
+        for (uint256 i = 0; i < recipients.length; ++i) {
+            _safeMint(recipients[i], tokenIds[i]);
         }
     }
 }
