@@ -76,11 +76,12 @@ describe("🔥 Verify signature + mint", function () {
         const raw_msg = new Array(signer_address, "_", token_id);
         const message = raw_msg.join("");
 
-        // Set signer to verify minting
-        await contract.setSigner(signer.address);
         const hash = await contract.getMessageHash(message);
         const signature = await signer.signMessage(ethers.utils.arrayify(hash));
         const ethHash = await contract.getEthSignedMessageHash(hash);
+
+        // Set signer to verify minting
+        await contract.setSigner(signer.address);
 
         // Verify signature and mint token
         await contract.verifyAndMint(message, signature, signer_address, token_id);

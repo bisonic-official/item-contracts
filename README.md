@@ -18,10 +18,10 @@ This repository contains some explorations of basic Item contracts depoyed to th
 
 ### Running the Python Scripts
 
-#### Minting an Item
+#### Verifying + minting an Item
 
 1. Add your `api_key` in the `config.ini` file. Fill missing fields with the information of your choice.
-2. Run `python mint.py` to run the script and mint an Item.
+2. Run `python verify_and_mint.py` to run the script and mint an Item.
 
 #### Transferring an Item
 
@@ -32,7 +32,7 @@ This repository contains some explorations of basic Item contracts depoyed to th
 #### Running the API service
 
 1. Add your `api_key` in the `config.ini` file. Fill missing fields with the information of your choice.
-2. Run `python app.py` to run the script and start the API service.
+2. Run `uvicorn app:app --reload` to run the script and start the API service.
 3. You can consume the API with the base route ([http://127.0.0.1:8000/](http://127.0.0.1:8000/)) and open the docs in the following route: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
 
 #### Consume the API service to obtain messages + signatures

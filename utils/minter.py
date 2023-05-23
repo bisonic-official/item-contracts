@@ -28,7 +28,8 @@ def get_token_id(url):
     return token_id
 
 
-def mint(w3, contract, account_address, private_key, token_id):
+def verify_and_mint(w3, contract, private_key, message, msg_hash, signature,
+                    to_address, token_id):
     """Mint an NFT.
 
     Parameters
@@ -37,57 +38,10 @@ def mint(w3, contract, account_address, private_key, token_id):
         The web3 object.
     contract
         The contract object.
-    account_address : str
-        The account address.
     private_key : str
         The private key.
-    token_id : int
-        The token ID.
-    
-    Returns
-    -------
-    txn : dict
-        The transaction dictionary.
-    """
-
-    logger = logging.getLogger('minter')
-
-    txn = contract.functions.mint(account_address, token_id).build_transaction(
-        {
-            'nonce': w3.eth.get_transaction_count(account_address),
-            'gas': 100000000
-        })
-
-    # Sign the transaction
-    txn_signed = w3.eth.account.sign_transaction(txn, private_key)
-
-    # Send the transaction and wait for the transaction receipt
-    txn_hash = w3.eth.send_raw_transaction(txn_signed.rawTransaction)
-    txn_receipt = w3.eth.wait_for_transaction_receipt(txn_hash)
-    txn_receipt = txn_receipt.transactionHash.hex()
-
-    log_msg = f"TXN successful with hash: { txn_receipt }"
-    logger.info(log_msg)
-
-    return txn_receipt
-
-
-def verify_and_mint(w3, contract, signer_address, private_key, message_hash,
-                    signature, to_address, token_id):
-    """Mint an NFT.
-
-    Parameters
-    ----------
-    w3 : Web3
-        The web3 object.
-    contract
-        The contract object.
-    signer_address : str
-        The account address of signer.
-    private_key : str
-        The private key.
-    message_hash : str
-        The hashed message.
+    message : str
+        The message.
     signature : str
         The signature.
     to_address : str
@@ -103,11 +57,20 @@ def verify_and_mint(w3, contract, signer_address, private_key, message_hash,
 
     logger = logging.getLogger('minter')
 
+    # TEMPORAL: Remove this when minting works
+    print()
+    s = contract.functions.getSigner().call()
+    print(f' ▶️  Valid signer (contract):  {s}')
+    address = contract.functions.recover(msg_hash, signature).call()
+    print(f' ▶️  Rec. address (signature): {address}')
+    resp = contract.functions.verify(s, message, signature).call()
+    print(f' ▶️  Verification result:      {resp}')
+    print()
+
     txn = contract.functions.verifyAndMint(
-        signer_address, message_hash, signature, to_address,
-        token_id).build_transaction({
+        message, signature, to_address, token_id).build_transaction({
             'nonce':
-            w3.eth.get_transaction_count(signer_address),
+            w3.eth.get_transaction_count(to_address),
             'gas':
             100000000
         })
@@ -120,7 +83,7 @@ def verify_and_mint(w3, contract, signer_address, private_key, message_hash,
     txn_receipt = w3.eth.wait_for_transaction_receipt(txn_hash)
     txn_receipt = txn_receipt.transactionHash.hex()
 
-    log_msg = f"TXN successful with hash: { txn_receipt }"
+    log_msg = f"TXN with hash: { txn_receipt }"
     logger.info(log_msg)
 
     return txn_receipt
@@ -171,7 +134,7 @@ def transfer(w3, contract, from_address, to_address, private_key, token_id):
     txn_receipt = w3.eth.wait_for_transaction_receipt(txn_hash)
     txn_receipt = txn_receipt.transactionHash.hex()
 
-    log_msg = f"TXN successful with hash: { txn_receipt }"
+    log_msg = f"TXN with hash: { txn_receipt }"
     logger.info(log_msg)
 
     return txn_receipt

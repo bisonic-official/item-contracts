@@ -31,14 +31,3 @@ def consume_api(address, token_id):
 
     if response.status_code == 200:
         return response.json()
-
-
-if __name__ == '__main__':
-    ADDRESS = '0x0000000000000000000000000000000000000000'
-    token_id = get_token_id()['id']
-    print(f' ▶️  Token_id:       {token_id}')
-
-    data = consume_api(ADDRESS, token_id)
-    print(f' ▶️  Message:        {data["message"]}')
-    print(f' ▶️  Hashed message: {data["message_hash"]}')
-    print(f' ▶️  signature:      {data["signature"]}')
