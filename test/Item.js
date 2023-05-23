@@ -114,7 +114,7 @@ describe("🔥 Verify signature + mint", function () {
         const contract = await Item.deploy();
         await contract.deployed();
 
-        let token_id = "0123456789";
+        const token_id = "0123456789";
         const raw_msg = new Array(signer.address, "_", token_id);
         const message = raw_msg.join("");
 
@@ -175,5 +175,71 @@ describe("🔥 Verify ownerMint function for private minting", function () {
                 signer.address,
                 signer.address
             ])).to.be.revertedWith("Arrays should have the same size");
+    });
+});
+
+describe("🔥 Verify URIs of Items", function () {
+    it("Should return the new set URI", async function () {
+        const Item = await ethers.getContractFactory("Item");
+        const contract = await Item.deploy();
+
+        // Update base URI
+        const baseURI = await contract.getBaseURI();
+
+        const newURI_data = new Array(baseURI, contract.address, '/');
+        const newURI = newURI_data.join("");
+        await contract.setBaseURI(newURI);
+
+        expect(await contract.getBaseURI()).to.equal(newURI);
+    });
+
+    it("Should return the Token URI", async function () {
+        const [signer] = await ethers.getSigners();
+
+        const Item = await ethers.getContractFactory("Item");
+        const contract = await Item.deploy();
+
+        // Update base URI
+        const baseURI = await contract.getBaseURI();
+
+        const newURI_data = new Array(baseURI, contract.address, '/');
+        const newURI = newURI_data.join("");
+        await contract.setBaseURI(newURI);
+
+        // Mint token
+        const tokenId = 1234567890;
+        const raw_msg = new Array(signer.address, "_", tokenId);
+        const message = raw_msg.join("");
+
+        // Set signer to verify minting
+        await contract.setSigner(signer.address);
+
+        const hash = await contract.getMessageHash(message);
+        const signature = await signer.signMessage(ethers.utils.arrayify(hash));
+        const ethHash = await contract.getEthSignedMessageHash(hash);
+
+        // Verify signature and mint token
+        await contract.verifyAndMint(message, signature, signer.address, tokenId);
+
+        // Get minted token URI
+        const newBaseURI = await contract.getBaseURI()
+        const newTokenId_data = new Array(newBaseURI, tokenId);
+        const newTokenId = newTokenId_data.join("");
+        expect(await contract.tokenURI(tokenId)).to.equal(newTokenId);
+    });
+
+    it("Should revert with non existing token", async function () {
+        const Item = await ethers.getContractFactory("Item");
+        const contract = await Item.deploy();
+
+        // Update base URI
+        const baseURI = await contract.getBaseURI();
+
+        const newURI_data = new Array(baseURI, contract.address, '/');
+        const newURI = newURI_data.join("");
+        await contract.setBaseURI(newURI);
+
+        // Get minted token URI
+        await expect(contract.tokenURI(123456789)).to.be.revertedWith("ERC721Metadata: URI query for nonexistent token");
     });
 });

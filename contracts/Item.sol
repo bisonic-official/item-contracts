@@ -6,6 +6,7 @@ pragma solidity ^0.8.18;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 
 /* Signature Verification
 
@@ -23,10 +24,11 @@ How to Sign and Verify
 
 // This is the main building block for smart contracts.
 contract Item is ERC721, Ownable {
-    /**
-     * @notice Address of the valid signer in contract.
-     */
+    /// @notice Address of the valid signer in contract.
     address public signer;
+
+    /// @notice The base URI for the metadata of the tokens
+    string public baseTokenURI;
 
     /**
      * @dev Constructor of the contract.
@@ -35,6 +37,7 @@ contract Item is ERC721, Ownable {
      */
     constructor() ERC721("Item", "ITM") {
         signer = 0x0d72fD549214Eb53cC241f400B147364e926E15B;
+        baseTokenURI = "https://testnets.opensea.io/assets/arbitrum-goerli/";
     }
 
     /**
@@ -51,6 +54,39 @@ contract Item is ERC721, Ownable {
      */
     function getSigner() external view returns (address) {
         return signer;
+    }
+
+    /**
+     * @dev Returns the URL of a given tokenId
+     * @param tokenId uint256 ID of the token to be minted
+     * @return string the URL of a given tokenId
+     */
+    function tokenURI(
+        uint256 tokenId
+    ) public view virtual override returns (string memory) {
+        require(
+            _exists(tokenId),
+            "ERC721Metadata: URI query for nonexistent token"
+        );
+
+        return
+            string(abi.encodePacked(baseTokenURI, Strings.toString(tokenId)));
+    }
+
+    /**
+     * @dev Returns the base URI of the token.
+     * @return baseTokenURI String value of base Token URI.
+     */
+    function getBaseURI() external view returns (string memory) {
+        return baseTokenURI;
+    }
+
+    /**
+     * @dev Sets a new base URI
+     * @param newBaseURI string the new token base URI
+     */
+    function setBaseURI(string calldata newBaseURI) external onlyOwner {
+        baseTokenURI = newBaseURI;
     }
 
     /**
