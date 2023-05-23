@@ -130,3 +130,49 @@ describe("🔥 Verify signature + mint", function () {
     });
 
 });
+
+describe("🔥 Verify ownerMint function for private minting", function () {
+    it("Function ownerMint should mint several tokens", async function () {
+        const [signer] = await ethers.getSigners();
+
+        const Item = await ethers.getContractFactory("Item");
+        const contract = await Item.deploy();
+        await contract.deployed();
+
+        // Set signer to verify minting
+        await contract.setSigner(signer.address);
+
+        // Test ownerMint function for several tokens
+        await contract.ownerMint(
+            [0, 1, 2, 3, 4],
+            [
+                signer.address,
+                signer.address,
+                signer.address,
+                signer.address,
+                signer.address
+            ]);
+    });
+
+    it("Function ownerMint should revert with not matching arrays (in size)", async function () {
+        const [signer] = await ethers.getSigners();
+
+        const Item = await ethers.getContractFactory("Item");
+        const contract = await Item.deploy();
+        await contract.deployed();
+
+        // Set signer to verify minting
+        await contract.setSigner(signer.address);
+
+        // Test ownerMint function for several tokens
+        await expect(contract.ownerMint(
+            [0, 1],
+            [
+                signer.address,
+                signer.address,
+                signer.address,
+                signer.address,
+                signer.address
+            ])).to.be.revertedWith("Arrays should have the same size");
+    });
+});

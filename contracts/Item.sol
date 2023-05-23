@@ -23,26 +23,43 @@ How to Sign and Verify
 
 // This is the main building block for smart contracts.
 contract Item is ERC721, Ownable {
-    // Signer variable
+    /**
+     * @notice Address of the valid signer in contract.
+     */
     address public signer;
 
-    // This is the constructor whose code is
-    // run only when the contract is created.
+    /**
+     * @dev Constructor of the contract.
+     * @notice We pass the name and symbol to the ERC721 constructor.
+     * @notice We set the valid signer address of contract.
+     */
     constructor() ERC721("Item", "ITM") {
         signer = 0x0d72fD549214Eb53cC241f400B147364e926E15B;
     }
 
-    // Set signer
+    /**
+     * @dev Sets the valid signer address of contract.
+     * @param _signer Address of the signer.
+     */
     function setSigner(address _signer) external onlyOwner {
         signer = _signer;
     }
 
-    // Get signer
+    /**
+     * @dev Returns the signer address of contract.
+     * @return signer Address of the valid signer in contract.
+     */
     function getSigner() external view returns (address) {
         return signer;
     }
 
-    // Verify signature
+    /**
+     * @dev Verifies if the signature corresponds to the signer.
+     * @param _signer Address of the signer.
+     * @param _message Message to verify with signature.
+     * @param _signature Signature used to verify the message.
+     * @return bool Returns if the signature is valid or not.
+     */
     function verify(
         address _signer,
         string memory _message,
@@ -54,14 +71,22 @@ contract Item is ERC721, Ownable {
         return recover(ethSignedMessageHash, _signature) == _signer;
     }
 
-    // Recover message hash
+    /**
+     * @dev Returns the message hash that is signed to create the signature.
+     * @param _message Message to be hashed.
+     * @return bytes32 Hash of the message.
+     */
     function getMessageHash(
         string memory _message
     ) public pure returns (bytes32) {
         return keccak256(abi.encodePacked(_message));
     }
 
-    // Recover signed message hash
+    /**
+     * @dev Returns the message hash that is signed to create the signature.
+     * @param _messageHash Hash of the message to be signed.
+     * @return bytes32 Hash of the message.
+     */
     function getEthSignedMessageHash(
         bytes32 _messageHash
     ) public pure returns (bytes32) {
@@ -74,7 +99,12 @@ contract Item is ERC721, Ownable {
             );
     }
 
-    // Recover signer from signed message
+    /**
+     * @dev Split signature and recover signer address.
+     * @param _ethSignedMessageHash Hash of the signed message.
+     * @param _signature Signature to split.
+     * @return address Address of the signer.
+     */
     function recover(
         bytes32 _ethSignedMessageHash,
         bytes memory _signature
@@ -84,7 +114,13 @@ contract Item is ERC721, Ownable {
         return ecrecover(_ethSignedMessageHash, v, r, s);
     }
 
-    // Split signature into `r`, `s` and `v` variables
+    /**
+     * @dev Split signature into `r`, `s` and `v` variables, used by recover method.
+     * @param _signature Signature to split.
+     * @return r
+     * @return s
+     * @return v
+     */
     function splitSignature(
         bytes memory _signature
     ) internal pure returns (bytes32 r, bytes32 s, uint8 v) {
@@ -100,7 +136,13 @@ contract Item is ERC721, Ownable {
         }
     }
 
-    // Verify + mint function
+    /**
+     * @dev Method to verify a message and mint an Item to an address. Used for public minting.
+     * @param _message Message to verify with signature.
+     * @param _signature Signature used to verify the message.
+     * @param to Address to which the token will be minted.
+     * @param tokenId ID of the token to be minted.
+     */
     function verifyAndMint(
         string memory _message,
         bytes memory _signature,
@@ -114,7 +156,11 @@ contract Item is ERC721, Ownable {
         _safeMint(to, tokenId);
     }
 
-    // Owner mint function
+    /**
+     * @dev Method to mint many Items and assign them to an addresses without any requirement. Used for private minting.
+     * @param tokenIds uint256[] Tokens to be transferred.
+     * @param recipients address[] Addresses where each token will be transferred.
+     */
     function ownerMint(
         uint256[] calldata tokenIds,
         address[] calldata recipients
