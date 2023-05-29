@@ -26,7 +26,7 @@ def main():
                                  config['contract']['abi'])
 
         # Obtain a token ID from URL
-        token_id = 31068974659341763119434520693  # TODO: Add token_id here!
+        token_id = 31089949472538994791664778055  # TODO: Add token_id here!
 
         token_msg = f'Obtained Token ID: {token_id}'
         print(f'[INFO] {token_msg}')

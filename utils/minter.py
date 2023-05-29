@@ -28,8 +28,8 @@ def get_token_id(url):
     return token_id
 
 
-def verify_and_mint(w3, contract, private_key, message, msg_hash, signature,
-                    to_address, token_id):
+def verify_and_mint(w3, contract, private_key, message, signature, to_address,
+                    token_id):
     """Mint an NFT.
 
     Parameters
@@ -57,22 +57,12 @@ def verify_and_mint(w3, contract, private_key, message, msg_hash, signature,
 
     logger = logging.getLogger('minter')
 
-    # TEMPORAL: Remove this when minting works
-    print()
-    s = contract.functions.getSigner().call()
-    print(f' ▶️  Valid signer (contract):  {s}')
-    address = contract.functions.recover(msg_hash, signature).call()
-    print(f' ▶️  Rec. address (signature): {address}')
-    resp = contract.functions.verify(s, message, signature).call()
-    print(f' ▶️  Verification result:      {resp}')
-    print()
-
     txn = contract.functions.verifyAndMint(
         message, signature, to_address, token_id).build_transaction({
             'nonce':
             w3.eth.get_transaction_count(to_address),
             'gas':
-            100000000
+            1000000
         })
 
     # Sign the transaction
@@ -123,7 +113,7 @@ def transfer(w3, contract, from_address, to_address, private_key, token_id):
             'nonce':
             w3.eth.get_transaction_count(from_address),
             'gas':
-            100000000
+            1000000
         })
 
     # Sign the transaction

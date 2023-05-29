@@ -30,7 +30,7 @@ def main():
         # Obtain a token ID from URL
         token_id_str = get_token_id()['id']
 
-        # Mint an NFT
+        # Consume the signer API
         address = config['account']['address']
         data = consume_api(address, token_id_str)
         print(f' ▶️  Message:           {data["message"]}')
@@ -41,12 +41,13 @@ def main():
         message = data['message']
         token_id = int(message.split('_')[1])
         print(f' ▶️  Token ID:          {token_id_str} / {token_id}')
+        signature = data['signature']
         signature = w3.to_bytes(hexstr=data['signature'])
 
+        # Verify and mint
         txn_receipt = verify_and_mint(w3, contract,
                                       config['account']['private_key'],
-                                      message, data["message_hash"], signature,
-                                      address, token_id)
+                                      message, signature, address, token_id)
         txn_msg = f'Transaction receipt: {txn_receipt}'
         print(f'[INFO] {txn_msg}')
         logger.info(txn_msg)
