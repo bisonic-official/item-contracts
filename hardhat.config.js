@@ -1,4 +1,5 @@
 require("@nomicfoundation/hardhat-toolbox");
+require('solidity-coverage');
 
 // Replace this private key with your Goerli account private key
 // To export your private key from Metamask, open Metamask and
