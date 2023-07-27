@@ -28,8 +28,8 @@ def get_token_id(url):
     return token_id
 
 
-def verify_and_mint(w3, contract, private_key, message, signature, to_address,
-                    token_id):
+def verify_and_mint(w3, contract, private_key, message, message_hash,
+                    signature, to_address, token_id):
     """Mint an NFT.
 
     Parameters
@@ -58,7 +58,8 @@ def verify_and_mint(w3, contract, private_key, message, signature, to_address,
     logger = logging.getLogger('minter')
 
     txn = contract.functions.verifyAndMint(
-        message, signature, to_address, token_id).build_transaction({
+        message, message_hash, signature,
+        token_id).build_transaction({
             'nonce':
             w3.eth.get_transaction_count(to_address),
             'gas':
