@@ -6,3 +6,9 @@ class TokenData(BaseModel):
 
     address: str
     token_id: str
+
+
+class UnauthorizedMessage(BaseModel):
+    """Unauthorized message model."""
+
+    detail: str = "Auth token missing or unknown!"
