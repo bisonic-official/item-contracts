@@ -13,7 +13,7 @@ describe("🔥 Item contract", function () {
         const Item = await ethers.getContractFactory("Item");
         const hardhatItem = await Item.deploy();
 
-        const default_signer = "0x0d72fD549214Eb53cC241f400B147364e926E15B";
+        const default_signer = "0xa0Ff5b048E0e53f1204F0537F1cEC8f49dC9D515";
         expect(await hardhatItem.getSigner()).to.equal(default_signer);
     });
 });
