@@ -84,7 +84,10 @@ describe("🔥 Verify signature + mint", function () {
         await contract.setSigner(signer.address);
 
         // Verify signature and mint token
-        await contract.verifyAndMint(message, signature, signer_address, token_id);
+        await contract.verifyAndMint(message, ethHash, signature, token_id);
+
+        const badMsgHash = ethHash.replace('7', '0');
+        await expect(contract.verifyAndMint(message, badMsgHash, signature, token_id)).to.be.revertedWith("Message hashes do not correspond");
     });
 
     it("Verify error when signer does not match", async function () {
@@ -104,7 +107,7 @@ describe("🔥 Verify signature + mint", function () {
         const ethHash = await contract.getEthSignedMessageHash(hash);
 
         // Verify signature using another signer
-        await expect(contract.verifyAndMint(message, signature, signer_address, token_id)).to.be.revertedWith("Invalid signer");
+        await expect(contract.verifyAndMint(message, ethHash, signature, token_id)).to.be.revertedWith("Invalid signer");
     });
 
     it("Verify multiple calls from same user with same token id", async function () {
@@ -126,8 +129,8 @@ describe("🔥 Verify signature + mint", function () {
         const ethHash = await contract.getEthSignedMessageHash(hash);
 
         // Verify signature and mint token
-        await contract.verifyAndMint(message, signature, signer.address, token_id);
-        await expect(contract.verifyAndMint(message, signature, signer.address, token_id)).to.be.revertedWith("ERC721: token already minted");
+        await contract.verifyAndMint(message, ethHash, signature, token_id);
+        await expect(contract.verifyAndMint(message, ethHash, signature, token_id)).to.be.revertedWith("ERC721: token already minted");
     });
 
 });
@@ -186,7 +189,7 @@ describe("🔥 Verify URIs of Items", function () {
         // Update base URI
         const baseURI = await contract.getBaseURI();
 
-        const newURI_data = new Array(baseURI, contract.address, '/');
+        const newURI_data = new Array(baseURI, contract.address.toLowerCase(), '/');
         const newURI = newURI_data.join("");
         await contract.setBaseURI(newURI);
 
@@ -202,7 +205,7 @@ describe("🔥 Verify URIs of Items", function () {
         // Update base URI
         const baseURI = await contract.getBaseURI();
 
-        const newURI_data = new Array(baseURI, contract.address, '/');
+        const newURI_data = new Array(baseURI, contract.address.toLowerCase(), '/');
         const newURI = newURI_data.join("");
         await contract.setBaseURI(newURI);
 
@@ -219,7 +222,7 @@ describe("🔥 Verify URIs of Items", function () {
         const ethHash = await contract.getEthSignedMessageHash(hash);
 
         // Verify signature and mint token
-        await contract.verifyAndMint(message, signature, signer.address, tokenId);
+        await contract.verifyAndMint(message, ethHash, signature, tokenId);
 
         // Get minted token URI
         const newBaseURI = await contract.getBaseURI()
@@ -235,7 +238,7 @@ describe("🔥 Verify URIs of Items", function () {
         // Update base URI
         const baseURI = await contract.getBaseURI();
 
-        const newURI_data = new Array(baseURI, contract.address, '/');
+        const newURI_data = new Array(baseURI, contract.address.toLowerCase(), '/');
         const newURI = newURI_data.join("");
         await contract.setBaseURI(newURI);
 

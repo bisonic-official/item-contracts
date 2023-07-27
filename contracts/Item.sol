@@ -7,6 +7,7 @@ pragma solidity ^0.8.18;
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
+import "hardhat/console.sol";
 
 /* Signature Verification
 
@@ -108,6 +109,19 @@ contract Item is ERC721, Ownable {
     }
 
     /**
+     * Return hash of message.
+     * @param _message Message to hash with signature.
+     */
+    function buildHashFromMessage(
+        string memory _message
+    ) private pure returns (bytes32) {
+        bytes32 messageHash = getMessageHash(_message);
+        bytes32 ethSignedMessageHash = getEthSignedMessageHash(messageHash);
+
+        return ethSignedMessageHash;
+    }
+
+    /**
      * @dev Returns the message hash that is signed to create the signature.
      * @param _message Message to be hashed.
      * @return bytes32 Hash of the message.
@@ -176,20 +190,33 @@ contract Item is ERC721, Ownable {
      * @dev Method to verify a message and mint an Item to an address. Used for public minting.
      * @param _message Message to verify with signature.
      * @param _signature Signature used to verify the message.
-     * @param to Address to which the token will be minted.
      * @param tokenId ID of the token to be minted.
      */
     function verifyAndMint(
         string memory _message,
+        string memory _messageHash,
         bytes memory _signature,
-        address to,
         uint256 tokenId
     ) public {
+        // Build signed hash locally
+        bytes32 signedHash = buildHashFromMessage(_message);
+        string memory signedHashStr = Strings.toHexString(
+            uint256(signedHash),
+            32
+        );
+
+        // Compare message hashes (locally and from signed service)
+        require(
+            keccak256(abi.encodePacked(signedHashStr)) ==
+                keccak256(abi.encodePacked(_messageHash)),
+            "Message hashes do not correspond"
+        );
+
         require(
             this.verify(signer, _message, _signature) == true,
             "Invalid signer"
         );
-        _safeMint(to, tokenId);
+        _safeMint(msg.sender, tokenId);
     }
 
     /**
