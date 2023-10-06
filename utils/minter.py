@@ -1,3 +1,5 @@
+"""Utility functions for minting and transfering NFTs."""
+
 import logging
 
 import requests
@@ -58,8 +60,7 @@ def verify_and_mint(w3, contract, private_key, message, message_hash,
     logger = logging.getLogger('minter')
 
     txn = contract.functions.verifyAndMint(
-        message, message_hash, signature,
-        token_id).build_transaction({
+        message, message_hash, signature, token_id).build_transaction({
             'nonce':
             w3.eth.get_transaction_count(to_address),
             'gas':

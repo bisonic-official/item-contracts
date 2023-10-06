@@ -1,10 +1,12 @@
+"""This module contains functions to consume API service locally."""
+
 import requests
 
 
 def get_token_id():
     """Obtain a token ID from GET request in URL."""
 
-    url = 'http://ec2-18-208-114-170.compute-1.amazonaws.com:9080/GetMintRandomItem'
+    url = 'http://127.0.0.1:8000/GetMintRandomItem'
 
     response = requests.get(url, timeout=5)
 

@@ -1,28 +1,42 @@
 const { expect } = require("chai");
 
-describe("🔥 Item contract", function () {
+describe("🔥 RuniverseItem contract", function () {
     it("Deployment should verify name and symbol", async function () {
-        const Item = await ethers.getContractFactory("Item");
-        const hardhatItem = await Item.deploy();
+        const [signer] = await ethers.getSigners();
 
-        expect(await hardhatItem.name()).to.equal("Item");
-        expect(await hardhatItem.symbol()).to.equal("ITM");
+        const RuniverseItem = await ethers.getContractFactory("RuniverseItem");
+        const hardhatRuniverseItem = await RuniverseItem.deploy(
+            signer.address, 
+            "https://testnets.opensea.io/assets/arbitrum-goerli/"
+        );
+
+        expect(await hardhatRuniverseItem.name()).to.equal("RuniverseItem");
+        expect(await hardhatRuniverseItem.symbol()).to.equal("RITM");
     });
 
     it("Deployment should return the default initial signer", async function () {
-        const Item = await ethers.getContractFactory("Item");
-        const hardhatItem = await Item.deploy();
+        const [signer] = await ethers.getSigners();
 
-        const default_signer = "0xa0Ff5b048E0e53f1204F0537F1cEC8f49dC9D515";
-        expect(await hardhatItem.getSigner()).to.equal(default_signer);
+        const RuniverseItem = await ethers.getContractFactory("RuniverseItem");
+        const hardhatRuniverseItem = await RuniverseItem.deploy(
+            signer.address, 
+            "https://testnets.opensea.io/assets/arbitrum-goerli/"
+        );
+
+        const default_signer = signer.address;
+        expect(await hardhatRuniverseItem.getSigner()).to.equal(default_signer);
     });
 });
 
 describe("🔥 Verify signer getter and setter", function () {
     it("Should get a valid signer address", async function () {
+        const [signer] = await ethers.getSigners();
 
-        const Item = await ethers.getContractFactory("Item");
-        const contract = await Item.deploy();
+        const RuniverseItem = await ethers.getContractFactory("RuniverseItem");
+        const contract = await RuniverseItem.deploy(
+            signer.address, 
+            "https://testnets.opensea.io/assets/arbitrum-goerli/"
+        );
         await contract.deployed();
 
         const addressRegex = /^0x[a-fA-F0-9]{40}$/;
@@ -33,8 +47,11 @@ describe("🔥 Verify signer getter and setter", function () {
     it("Should set a new signer address", async function () {
         const [signer] = await ethers.getSigners();
 
-        const Item = await ethers.getContractFactory("Item");
-        const contract = await Item.deploy();
+        const RuniverseItem = await ethers.getContractFactory("RuniverseItem");
+        const contract = await RuniverseItem.deploy(
+            signer.address, 
+            "https://testnets.opensea.io/assets/arbitrum-goerli/"
+        );
         await contract.deployed();
 
         await contract.setSigner(signer.address);
@@ -46,8 +63,11 @@ describe("🔥 Verify signature + mint", function () {
     it("Check if signer matches with recovered signer", async function () {
         const [signer] = await ethers.getSigners();
 
-        const Item = await ethers.getContractFactory("Item");
-        const contract = await Item.deploy();
+        const RuniverseItem = await ethers.getContractFactory("RuniverseItem");
+        const contract = await RuniverseItem.deploy(
+            signer.address, 
+            "https://testnets.opensea.io/assets/arbitrum-goerli/"
+        );
         await contract.deployed();
 
         const signer_address = signer.address;
@@ -67,8 +87,11 @@ describe("🔥 Verify signature + mint", function () {
     it("Verify signer and mint token function", async function () {
         const [signer] = await ethers.getSigners();
 
-        const Item = await ethers.getContractFactory("Item");
-        const contract = await Item.deploy();
+        const RuniverseItem = await ethers.getContractFactory("RuniverseItem");
+        const contract = await RuniverseItem.deploy(
+            signer.address, 
+            "https://testnets.opensea.io/assets/arbitrum-goerli/"
+        );
         await contract.deployed();
 
         const signer_address = signer.address;
@@ -93,8 +116,11 @@ describe("🔥 Verify signature + mint", function () {
     it("Verify error when signer does not match", async function () {
         const [signer] = await ethers.getSigners();
 
-        const Item = await ethers.getContractFactory("Item");
-        const contract = await Item.deploy();
+        const RuniverseItem = await ethers.getContractFactory("RuniverseItem");
+        const contract = await RuniverseItem.deploy(
+            "0x0000000000000000000000000000000000000000", 
+            "https://testnets.opensea.io/assets/arbitrum-goerli/"
+        );
         await contract.deployed();
 
         const signer_address = signer.address;
@@ -113,8 +139,11 @@ describe("🔥 Verify signature + mint", function () {
     it("Verify multiple calls from same user with same token id", async function () {
         const [signer] = await ethers.getSigners();
 
-        const Item = await ethers.getContractFactory("Item");
-        const contract = await Item.deploy();
+        const RuniverseItem = await ethers.getContractFactory("RuniverseItem");
+        const contract = await RuniverseItem.deploy(
+            signer.address, 
+            "https://testnets.opensea.io/assets/arbitrum-goerli/"
+        );
         await contract.deployed();
 
         const token_id = "0123456789";
@@ -139,8 +168,11 @@ describe("🔥 Verify ownerMint function for private minting", function () {
     it("Function ownerMint should mint several tokens", async function () {
         const [signer] = await ethers.getSigners();
 
-        const Item = await ethers.getContractFactory("Item");
-        const contract = await Item.deploy();
+        const RuniverseItem = await ethers.getContractFactory("RuniverseItem");
+        const contract = await RuniverseItem.deploy(
+            signer.address, 
+            "https://testnets.opensea.io/assets/arbitrum-goerli/"
+        );
         await contract.deployed();
 
         // Set signer to verify minting
@@ -161,8 +193,11 @@ describe("🔥 Verify ownerMint function for private minting", function () {
     it("Function ownerMint should revert with not matching arrays (in size)", async function () {
         const [signer] = await ethers.getSigners();
 
-        const Item = await ethers.getContractFactory("Item");
-        const contract = await Item.deploy();
+        const RuniverseItem = await ethers.getContractFactory("RuniverseItem");
+        const contract = await RuniverseItem.deploy(
+            signer.address, 
+            "https://testnets.opensea.io/assets/arbitrum-goerli/"
+        );
         await contract.deployed();
 
         // Set signer to verify minting
@@ -181,10 +216,15 @@ describe("🔥 Verify ownerMint function for private minting", function () {
     });
 });
 
-describe("🔥 Verify URIs of Items", function () {
+describe("🔥 Verify URIs of RuniverseItems", function () {
     it("Should return the new set URI", async function () {
-        const Item = await ethers.getContractFactory("Item");
-        const contract = await Item.deploy();
+        const [signer] = await ethers.getSigners();
+
+        const RuniverseItem = await ethers.getContractFactory("RuniverseItem");
+        const contract = await RuniverseItem.deploy(
+            signer.address, 
+            "https://testnets.opensea.io/assets/arbitrum-goerli/"
+        );
 
         // Update base URI
         const baseURI = await contract.getBaseURI();
@@ -199,8 +239,11 @@ describe("🔥 Verify URIs of Items", function () {
     it("Should return the Token URI", async function () {
         const [signer] = await ethers.getSigners();
 
-        const Item = await ethers.getContractFactory("Item");
-        const contract = await Item.deploy();
+        const RuniverseItem = await ethers.getContractFactory("RuniverseItem");
+        const contract = await RuniverseItem.deploy(
+            signer.address, 
+            "https://testnets.opensea.io/assets/arbitrum-goerli/"
+        );
 
         // Update base URI
         const baseURI = await contract.getBaseURI();
@@ -232,8 +275,13 @@ describe("🔥 Verify URIs of Items", function () {
     });
 
     it("Should revert with non existing token", async function () {
-        const Item = await ethers.getContractFactory("Item");
-        const contract = await Item.deploy();
+        const [signer] = await ethers.getSigners();
+        
+        const RuniverseItem = await ethers.getContractFactory("RuniverseItem");
+        const contract = await RuniverseItem.deploy(
+            signer.address, 
+            "https://testnets.opensea.io/assets/arbitrum-goerli/"
+        );
 
         // Update base URI
         const baseURI = await contract.getBaseURI();

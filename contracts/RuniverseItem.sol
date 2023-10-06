@@ -7,7 +7,6 @@ pragma solidity ^0.8.18;
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
-import "hardhat/console.sol";
 
 /* Signature Verification
 
@@ -24,7 +23,7 @@ How to Sign and Verify
 */
 
 // This is the main building block for smart contracts.
-contract Item is ERC721, Ownable {
+contract RuniverseItem is ERC721, Ownable {
     /// @notice Address of the valid signer in contract.
     address public signer;
 
@@ -36,9 +35,12 @@ contract Item is ERC721, Ownable {
      * @notice We pass the name and symbol to the ERC721 constructor.
      * @notice We set the valid signer address of contract.
      */
-    constructor() ERC721("Item", "ITM") {
-        signer = 0xa0Ff5b048E0e53f1204F0537F1cEC8f49dC9D515;
-        baseTokenURI = "https://testnets.opensea.io/assets/arbitrum-goerli/";
+    constructor(
+        address _signer,
+        string memory _baseURI
+    ) ERC721("RuniverseItem", "RITM") {
+        signer = _signer;
+        baseTokenURI = _baseURI;
     }
 
     /**
@@ -158,7 +160,7 @@ contract Item is ERC721, Ownable {
     function recover(
         bytes32 _ethSignedMessageHash,
         bytes memory _signature
-    ) public pure returns (address) {
+    ) private pure returns (address) {
         (bytes32 r, bytes32 s, uint8 v) = splitSignature(_signature);
 
         return ecrecover(_ethSignedMessageHash, v, r, s);
@@ -187,7 +189,7 @@ contract Item is ERC721, Ownable {
     }
 
     /**
-     * @dev Method to verify a message and mint an Item to an address. Used for public minting.
+     * @dev Method to verify a message and mint an RuniverseItem to an address. Used for public minting.
      * @param _message Message to verify with signature.
      * @param _signature Signature used to verify the message.
      * @param tokenId ID of the token to be minted.
@@ -220,7 +222,7 @@ contract Item is ERC721, Ownable {
     }
 
     /**
-     * @dev Method to mint many Items and assign them to an addresses without any requirement. Used for private minting.
+     * @dev Method to mint many RuniverseItems and assign them to an addresses without any requirement. Used for private minting.
      * @param tokenIds uint256[] Tokens to be transferred.
      * @param recipients address[] Addresses where each token will be transferred.
      */

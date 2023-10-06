@@ -1,3 +1,5 @@
+"""Sign a message with a private key and verify it with the public key."""
+
 from eth_account.messages import encode_defunct
 
 from utils.config import load_config

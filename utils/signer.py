@@ -1,3 +1,5 @@
+"""Signer utility functions."""
+
 from eth_account.messages import encode_defunct
 
 

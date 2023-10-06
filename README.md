@@ -1,6 +1,6 @@
-# Item Contracts 📃
+# RuniverseItem Contract 📃
 
-This repository contains some explorations of basic Item contracts depoyed to the [Nitro Goerli Rollup Testnet](https://developer.arbitrum.io/public-chains).
+This repository contains some explorations of the RuniverseItem contract deployed to the [Nitro Goerli Rollup Testnet](https://developer.arbitrum.io/public-chains).
 
 ## Setup
 
@@ -9,7 +9,7 @@ This repository contains some explorations of basic Item contracts depoyed to th
     - NPM Dependencies: `npm install`
     - Python dependencies: `pip install -r requirements.txt`
 
-### Deploying the Item Contract to Goerli
+### Deploying the RuniverseItem Contract to Goerli
 
 1. Add your `GOERLI_PRIVATE_KEY` in `hardhat.config.js`.
 2. Run `npx hardhat compile` to compile the contracts.
@@ -18,16 +18,16 @@ This repository contains some explorations of basic Item contracts depoyed to th
 
 ### Running the Python Scripts
 
-#### Verifying + minting an Item
+#### Verifying + minting a RuniverseItem
 
 1. Add your `api_key` in the `config.ini` file. Fill missing fields with the information of your choice.
-2. Run `python verify_and_mint.py` to run the script and mint an Item.
+2. Run `python verify_and_mint.py` to run the script and mint a RuniverseItem.
 
-#### Transferring an Item
+#### Transferring a RuniverseItem
 
 1. Add your `api_key` in the `config.ini` file. Fill missing fields with the information of your choice.
 2. Edit the `transfer.py` script to add the owner address, new owner address and `token_id` of the NFT.
-3. Run `python transfer.py` to run the script and transfer an Item.
+3. Run `python transfer.py` to run the script and transfer a RuniverseItem.
 
 #### Running the API service
 
@@ -38,5 +38,5 @@ This repository contains some explorations of basic Item contracts depoyed to th
 #### Consume the API service to obtain messages + signatures
 
 1. Add your `api_key` in the `config.ini` file. Fill missing fields with the information of your choice.
-2. Edit the `consumer.py` script to add the owner address to be used in the signature.
+2. Edit the `consumer.py` script to add the owner address and API to be used in the signature process.
 3. Run `python consumer.py` to consume the `token_id` obtainer service and our API service. This will print the message and signature of the `token_id` in the console.

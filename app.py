@@ -1,3 +1,5 @@
+"""Main module of the API."""
+
 import sys
 
 from fastapi import FastAPI
