@@ -77,6 +77,15 @@ contract RuniverseItem is ERC721, Ownable {
     }
 
     /**
+     * @dev Returns if the token exists.
+     * @param tokenId uint256 with the ID of the token.
+     * @return exists bool if it exists.
+     */
+    function exists(uint256 tokenId) external view returns (bool) {
+        return _exists(tokenId);
+    }
+
+    /**
      * @dev Returns the base URI of the token.
      * @return baseTokenURI String value of base Token URI.
      */
