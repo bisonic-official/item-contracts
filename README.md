@@ -32,8 +32,9 @@ This repository contains some explorations of the RuniverseItem contract deploye
 #### Running the API service
 
 1. Add your `api_key` in the `config.ini` file. Fill missing fields with the information of your choice.
-2. Run `uvicorn app:app --reload` to run the script and start the API service.
-3. You can consume the API with the base route ([http://127.0.0.1:8000/](http://127.0.0.1:8000/)) and open the docs in the following route: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
+2. It is important to set valid keys in the `app.py` file for API consumption.
+3. Run `uvicorn app:app --reload` to run the script and start the API service.
+4. You can consume the API with the base route ([http://127.0.0.1:8000/](http://127.0.0.1:8000/)) and open the docs in the following route: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
 
 #### Consume the API service to obtain messages + signatures
 
