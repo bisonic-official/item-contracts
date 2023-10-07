@@ -109,6 +109,10 @@ describe("🔥 Verify signature + mint", function () {
         // Verify signature and mint token
         await contract.verifyAndMint(message, ethHash, signature, token_id);
 
+        // Check if token was minted
+        expect(await contract.ownerOf(token_id)).to.equal(signer.address);
+        expect(await contract.exists(token_id)).to.equal(true);
+
         const badMsgHash = ethHash.replace('7', '0');
         await expect(contract.verifyAndMint(message, badMsgHash, signature, token_id)).to.be.revertedWith("Message hashes do not correspond");
     });
