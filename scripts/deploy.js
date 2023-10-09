@@ -7,7 +7,7 @@ async function main() {
     const RuniverseItem = await ethers.getContractFactory("RuniverseItem");
     const runiverseItem = await RuniverseItem.deploy(
         "0xa0Ff5b048E0e53f1204F0537F1cEC8f49dC9D515", 
-        "https://testnets.opensea.io/assets/arbitrum-goerli/"
+        "https://api.runiverse.world/GetItemInfo?ItemId="
     );
 
     console.log("RuniverseItem address:", runiverseItem.address);
