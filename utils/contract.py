@@ -28,8 +28,12 @@ def connect_to_web3(network='goerli', api_key=None):
 
     if network == 'goerli-eth' or network == 'goerli-ethereum':
         url = 'https://eth-goerli.g.alchemy.com/v2/' + api_key
+    elif network == 'main-eth' or network == 'main-ethereum':
+        url = 'https://eth-mainnet.g.alchemy.com/v2/' + api_key
     elif network == 'goerli-arb' or network == 'goerli-arbitrum':
         url = 'https://arb-goerli.g.alchemy.com/v2/' + api_key
+    elif network == 'main-arb' or network == 'main-arbitrum':
+        url = 'https://arb-mainnet.g.alchemy.com/v2/' + api_key
     else:
         raise ValueError('Invalid network')
 
