@@ -1,30 +1,11 @@
 //SPDX-License-Identifier: UNLICENSED
-
-// Solidity files have to start with this pragma.
-// It will be used by the Solidity compiler to validate its version.
 pragma solidity ^0.8.18;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 
-import "hardhat/console.sol";
 
-/* Signature Verification
-
-How to Sign and Verify
-# Signing
-1. Create message to sign
-2. Hash the message
-3. Sign the hash (off chain, keep your private key secret)
-
-# Verify
-1. Recreate hash from the original message
-2. Recover signer from signature and hash
-3. Compare recovered signer to claimed signer
-*/
-
-// This is the main building block for smart contracts.
 contract RuniverseItem is ERC721, Ownable {
     /// @notice Address of the valid signer in contract.
     address public signer;
@@ -117,19 +98,6 @@ contract RuniverseItem is ERC721, Ownable {
         bytes32 ethSignedMessageHash = getEthSignedMessageHash(messageHash);
 
         return recover(ethSignedMessageHash, _signature) == signer;
-    }
-
-    /**
-     * Return hash of message.
-     * @param _message Message to hash with signature.
-     */
-    function buildHashFromMessage(
-        string memory _message
-    ) private pure returns (bytes32) {
-        bytes32 messageHash = getMessageHash(_message);
-        bytes32 ethSignedMessageHash = getEthSignedMessageHash(messageHash);
-
-        return ethSignedMessageHash;
     }
 
     /**
