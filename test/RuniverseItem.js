@@ -1,8 +1,9 @@
 const { expect } = require("chai");
+const { Wallet } = require('ethers');
 
 const generateSignature = async (address, tokenId, contract, signer) => {
   const raw_msg = new Array(address.toLowerCase(), tokenId);
-  const message = raw_msg.join(":");
+  const message = raw_msg.join("_");
 
   const hash = await contract.getMessageHash(message);
 
@@ -104,7 +105,7 @@ describe("🔥 Verify signature + mint", function () {
     await contract.deployed();
 
     const token_id = 123456789;
-    const { signature } = await generateSignature(
+    const { message, signature } = await generateSignature(
       user.address,
       token_id,
       contract,
@@ -112,11 +113,11 @@ describe("🔥 Verify signature + mint", function () {
     );
 
     // Verify can't use signature to mint wrong token
-    await expect(contract.verifyAndMint(signature, "42")).to.be.revertedWith(
+    await expect(contract.verifyAndMint(signature, 42)).to.be.revertedWith(
       "Bad signature"
     );
 
-    // Verify wrong use can't use the same signature
+    // Verify wrong user can't use the same signature
     await expect(
       contract.connect(hacker).verifyAndMint(signature, token_id)
     ).to.be.revertedWith("Bad signature");
@@ -125,13 +126,14 @@ describe("🔥 Verify signature + mint", function () {
     await contract.verifyAndMint(signature, token_id);
 
     // Verify can't use same signature to mint another token (prevented since token id is part of signature)
-    await expect(contract.verifyAndMint(signature, 1111111)).to.be.revertedWith(
+    await expect(contract.verifyAndMint(signature, token_id + 1)).to.be.revertedWith(
       "Bad signature"
     );
 
     // Check if token was minted
     expect(await contract.ownerOf(token_id)).to.equal(user.address);
     expect(await contract.exists(token_id)).to.equal(true);
+    expect(await contract.exists(token_id + 1)).to.equal(false);
   });
 
   it("Verify error when signer does not match", async function () {
