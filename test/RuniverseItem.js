@@ -209,6 +209,12 @@ describe("🔥 Verify ownerMint function for private minting", function () {
         signer.address,
       ]
     );
+    
+    // Check if tokens were minted
+    for (let i = 0; i < 5; i++) {
+      expect(await contract.ownerOf(i)).to.equal(signer.address);
+      expect(await contract.exists(i)).to.equal(true);
+    }
   });
 
   it("Function ownerMint should revert with not matching arrays (in size)", async function () {
