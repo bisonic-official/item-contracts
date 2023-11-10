@@ -1,28 +1,11 @@
 //SPDX-License-Identifier: UNLICENSED
-
-// Solidity files have to start with this pragma.
-// It will be used by the Solidity compiler to validate its version.
 pragma solidity ^0.8.18;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 
-/* Signature Verification
 
-How to Sign and Verify
-# Signing
-1. Create message to sign
-2. Hash the message
-3. Sign the hash (off chain, keep your private key secret)
-
-# Verify
-1. Recreate hash from the original message
-2. Recover signer from signature and hash
-3. Compare recovered signer to claimed signer
-*/
-
-// This is the main building block for smart contracts.
 contract RuniverseItem is ERC721, Ownable {
     /// @notice Address of the valid signer in contract.
     address public signer;
@@ -73,7 +56,7 @@ contract RuniverseItem is ERC721, Ownable {
         );
 
         return
-            string(abi.encodePacked(baseTokenURI, Strings.toString(tokenId)));
+            string.concat(baseTokenURI, Strings.toString(tokenId));
     }
 
     /**
@@ -103,33 +86,18 @@ contract RuniverseItem is ERC721, Ownable {
 
     /**
      * @dev Verifies if the signature corresponds to the signer.
-     * @param _signer Address of the signer.
      * @param _message Message to verify with signature.
      * @param _signature Signature used to verify the message.
      * @return bool Returns if the signature is valid or not.
      */
     function verify(
-        address _signer,
         string memory _message,
         bytes memory _signature
-    ) external pure returns (bool) {
+    ) public view returns (bool) {
         bytes32 messageHash = getMessageHash(_message);
         bytes32 ethSignedMessageHash = getEthSignedMessageHash(messageHash);
 
-        return recover(ethSignedMessageHash, _signature) == _signer;
-    }
-
-    /**
-     * Return hash of message.
-     * @param _message Message to hash with signature.
-     */
-    function buildHashFromMessage(
-        string memory _message
-    ) private pure returns (bytes32) {
-        bytes32 messageHash = getMessageHash(_message);
-        bytes32 ethSignedMessageHash = getEthSignedMessageHash(messageHash);
-
-        return ethSignedMessageHash;
+        return recover(ethSignedMessageHash, _signature) == signer;
     }
 
     /**
@@ -199,34 +167,20 @@ contract RuniverseItem is ERC721, Ownable {
 
     /**
      * @dev Method to verify a message and mint an RuniverseItem to an address. Used for public minting.
-     * @param _message Message to verify with signature.
-     * @param _signature Signature used to verify the message.
+     * @param signature Signature used to verify the message.
      * @param tokenId ID of the token to be minted.
      */
     function verifyAndMint(
-        string memory _message,
-        string memory _messageHash,
-        bytes memory _signature,
+        bytes memory signature,
         uint256 tokenId
     ) public {
-        // Build signed hash locally
-        bytes32 signedHash = buildHashFromMessage(_message);
-        string memory signedHashStr = Strings.toHexString(
-            uint256(signedHash),
-            32
+        string memory message = string.concat(Strings.toHexString(msg.sender), ":" , Strings.toString(tokenId));
+
+        require(    
+            this.verify(message, signature),
+            "Bad signature"
         );
 
-        // Compare message hashes (locally and from signed service)
-        require(
-            keccak256(abi.encodePacked(signedHashStr)) ==
-                keccak256(abi.encodePacked(_messageHash)),
-            "Message hashes do not correspond"
-        );
-
-        require(
-            this.verify(signer, _message, _signature) == true,
-            "Invalid signer"
-        );
         _safeMint(msg.sender, tokenId);
     }
 
