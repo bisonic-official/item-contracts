@@ -2,7 +2,7 @@ const { expect } = require("chai");
 
 const generateSignature = async (address, tokenId, contract, signer) => {
   const raw_msg = new Array(address.toLowerCase(), tokenId);
-  const message = raw_msg.join(":");
+  const message = raw_msg.join("_");
 
   const hash = await contract.getMessageHash(message);
 

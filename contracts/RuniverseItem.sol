@@ -5,7 +5,6 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 
-
 contract RuniverseItem is ERC721, Ownable {
     /// @notice Address of the valid signer in contract.
     address public signer;
@@ -55,8 +54,7 @@ contract RuniverseItem is ERC721, Ownable {
             "ERC721Metadata: URI query for nonexistent token"
         );
 
-        return
-            string.concat(baseTokenURI, Strings.toString(tokenId));
+        return string.concat(baseTokenURI, Strings.toString(tokenId));
     }
 
     /**
@@ -170,16 +168,14 @@ contract RuniverseItem is ERC721, Ownable {
      * @param signature Signature used to verify the message.
      * @param tokenId ID of the token to be minted.
      */
-    function verifyAndMint(
-        bytes memory signature,
-        uint256 tokenId
-    ) public {
-        string memory message = string.concat(Strings.toHexString(msg.sender), ":" , Strings.toString(tokenId));
-
-        require(    
-            this.verify(message, signature),
-            "Bad signature"
+    function verifyAndMint(bytes memory signature, uint256 tokenId) public {
+        string memory message = string.concat(
+            Strings.toHexString(msg.sender),
+            "_",
+            Strings.toString(tokenId)
         );
+
+        require(this.verify(message, signature), "Bad signature");
 
         _safeMint(msg.sender, tokenId);
     }
