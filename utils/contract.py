@@ -26,13 +26,17 @@ def connect_to_web3(network='goerli', api_key=None):
     if api_key is None or api_key == '':
         raise ValueError('API key is required for Alchemy')
 
-    if network == 'goerli-eth' or network == 'goerli-ethereum':
+    if network in ['goerli-eth', 'goerli-ethereum']:
         url = 'https://eth-goerli.g.alchemy.com/v2/' + api_key
-    elif network == 'main-eth' or network == 'main-ethereum':
+    elif network in ['sepolia-eth', 'sepolia-ethereum']:
+        url = 'https://eth-sepolia.g.alchemy.com/v2/' + api_key
+    elif network in ['main-eth', 'main-ethereum']:
         url = 'https://eth-mainnet.g.alchemy.com/v2/' + api_key
-    elif network == 'goerli-arb' or network == 'goerli-arbitrum':
+    elif network in ['goerli-arb', 'goerli-arbitrum']:
         url = 'https://arb-goerli.g.alchemy.com/v2/' + api_key
-    elif network == 'main-arb' or network == 'main-arbitrum':
+    elif network in ['sepolia-arb', 'sepolia-arbitrum']:
+        url = 'https://arb-sepolia.g.alchemy.com/v2/' + api_key
+    elif network in ['main-arb', 'main-arbitrum']:
         url = 'https://arb-mainnet.g.alchemy.com/v2/' + api_key
     else:
         raise ValueError('Invalid network')
