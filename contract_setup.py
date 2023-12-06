@@ -10,7 +10,7 @@ from utils.contract import load_contract
 
 def set_token_uri(w3, contract, private_key, owner_address, token_uri):
     """Set the vault address.
-    
+
     Parameters
     ----------
     w3 : Web3
@@ -23,7 +23,7 @@ def set_token_uri(w3, contract, private_key, owner_address, token_uri):
         The owner address.
     token_uri : str
         The token URI.
-    
+
     Returns
     -------
     txn : dict
@@ -37,6 +37,53 @@ def set_token_uri(w3, contract, private_key, owner_address, token_uri):
         w3.eth.get_transaction_count(owner_address),
         'gas':
         1000000
+    })
+
+    # Sign the transaction
+    txn_signed = w3.eth.account.sign_transaction(txn, private_key)
+
+    # Send the transaction and wait for the transaction receipt
+    txn_hash = w3.eth.send_raw_transaction(txn_signed.rawTransaction)
+    txn_receipt = w3.eth.wait_for_transaction_receipt(txn_hash)
+    txn_receipt = txn_receipt.transactionHash.hex()
+
+    log_msg = f"TXN with hash: { txn_receipt }"
+    logger.info(log_msg)
+
+    return txn_receipt
+
+
+def set_signer_address(w3, contract, private_key, owner_address, signer):
+    """Set the vault address.
+
+    Parameters
+    ----------
+    w3 : Web3
+        The web3 object.
+    contract
+        The contract object.
+    private_key : str
+        The private key.
+    owner_address : str
+        The owner address.
+    signer : str
+        The signer address.
+
+    Returns
+    -------
+    txn : dict
+        The transaction dictionary.
+    """
+
+    logger = logging.getLogger('minter')
+
+    txn = contract.functions.setSigner(signer).build_transaction({
+        'nonce':
+        w3.eth.get_transaction_count(owner_address),
+        'gas':
+        800000,
+        'maxFeePerGas':
+        100000000,
     })
 
     # Sign the transaction
@@ -79,15 +126,29 @@ def main():
         base_uri = contract.functions.getBaseURI().call()
         print(f'[INFO] Base URI: {base_uri}')
 
-        # Set the base URI
-        token_uri = 'http://URI/GetItemInfo?ItemId='
-        txn_receipt = set_token_uri(w3, contract, private_key, address,
-                                    token_uri)
-        print(f'[INFO] Transaction receipt: {txn_receipt}')
+        # # Set the base URI
+        # token_uri = 'https://api.runiverse.world/GetItemInfo?RuniverseItemId='
+        # txn_receipt = set_token_uri(w3, contract, private_key, address,
+        #                             token_uri)
+        # print(f'[INFO] Transaction receipt: {txn_receipt}')
 
-        # Get the base URI after setup
-        base_uri = contract.functions.getBaseURI().call()
-        print(f'[INFO] Base URI: {base_uri}')
+        # # Get the base URI after setup
+        # base_uri = contract.functions.getBaseURI().call()
+        # print(f'[INFO] Base URI: {base_uri}')
+
+        # # Get the signer address before setup
+        # signer = contract.functions.getSigner().call()
+        # print(f'[INFO] Signer address: {signer}')
+
+        # # Set the signer address
+        # new_signer = '0xCf01046a5290eb0f955a63825Bdb9c3ce8da79B3'
+        # txn_receipt = set_signer_address(w3, contract, private_key, address,
+        #                                  new_signer)
+        # print(f'[INFO] Transaction receipt: {txn_receipt}')
+
+        # Get the signer address after setup
+        signer = contract.functions.getSigner().call()
+        print(f'[INFO] Signer address: {signer}')
 
 
 if __name__ == '__main__':
