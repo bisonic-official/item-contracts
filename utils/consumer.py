@@ -3,20 +3,9 @@
 import requests
 
 
-def get_token_id():
-    """Obtain a token ID from GET request in URL."""
-
-    url = 'http://127.0.0.1:8000/GetMintRandomItem'
-
-    response = requests.get(url, timeout=5)
-
-    if response.status_code == 200:
-        return response.json()
-
-
 def consume_api(address, token_id):
     """The main function to consume API service.
-    
+
     Parameters
     ----------
     address : str
@@ -36,3 +25,5 @@ def consume_api(address, token_id):
 
     if response.status_code == 200:
         return response.json()
+
+    return None

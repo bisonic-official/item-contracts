@@ -3,7 +3,6 @@ from utils.config import setup_custom_logger
 from utils.contract import connect_to_web3
 from utils.contract import load_contract
 from utils.consumer import consume_api
-from utils.consumer import get_token_id
 from utils.minter import verify_and_mint
 
 
@@ -27,26 +26,18 @@ def main():
         contract = load_contract(w3, config['contract']['address'],
                                  config['contract']['abi'])
 
-        # Obtain a token ID from URL
-        token_id_str = get_token_id()['id']
-
         # Consume the signer API
         address = config['account']['address']
-        data = consume_api(address, token_id_str)
 
-        # Message + signature data
-        message = data['message']
-        message_hash = data['message_hash']
-        token_id = int(message.split('_')[1])
-        print(f'[INFO] Token ID: {token_id_str} / {token_id}')
-        signature = data['signature']
-        signature = w3.to_bytes(hexstr=data['signature'])
+        # Token + signature
+        token_id = int("TOKEN_ID_HEX", 16)
+        signature = "SIGNATURE"
+        signature = w3.to_bytes(hexstr=signature)
 
         # Verify and mint
         txn_receipt = verify_and_mint(w3, contract,
                                       config['account']['private_key'],
-                                      message, message_hash, signature,
-                                      address, token_id)
+                                      signature, address, token_id)
         txn_msg = f'Transaction receipt: {txn_receipt}'
         print(f'[INFO] {txn_msg}')
         logger.info(txn_msg)
