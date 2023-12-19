@@ -1,16 +1,27 @@
 async function main() {
+    // Get the deployer account of contracts
     const [deployer] = await ethers.getSigners();
-
     console.log("Deploying contracts with the account:", deployer.address);
     console.log("Account balance:", (await deployer.getBalance()).toString());
 
-    const RuniverseItem = await ethers.getContractFactory("RuniverseItem");
-    const runiverseItem = await RuniverseItem.deploy(
-        "0xa0Ff5b048E0e53f1204F0537F1cEC8f49dC9D515", 
-        "https://api.runiverse.world/GetItemInfo?ItemId="
-    );
+    // Deploy Runiverse Item Contract
+    const RuniverseItemContract = await ethers.getContractFactory("RuniverseItem");
+    const runiverseItemContract = await RuniverseItemContract.deploy("https://api.runiverse.world/GetItemInfo?ItemId=");
+    console.log("Runiverse Item Contract Address:", runiverseItemContract.address);
 
-    console.log("RuniverseItem address:", runiverseItem.address);
+    // Deploy Runiverse Item Minter Contract
+    const RuniverseItemMinterContract = await ethers.getContractFactory("RuniverseItemMinter");
+    const runiverseItemMinterContract = await RuniverseItemMinterContract.deploy(
+        runiverseItemContract.address,
+        deployer.address
+    );
+    console.log("Runiverse Item Minter Address:", runiverseItemMinterContract.address);
+
+    // Set minter address
+    let tx = await runiverseItemContract.setMinter(runiverseItemMinterContract.address);
+    console.log(tx);
+    let re = await tx.wait();
+    console.log(re);
 }
 
 main()

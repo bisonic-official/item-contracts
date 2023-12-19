@@ -1,44 +1,76 @@
 //SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.18;
 
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Pausable.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
+import "./IRuniverseItem.sol";
 
-contract RuniverseItem is ERC721, Ownable {
-    /// @notice Address of the valid signer in contract.
-    address public signer;
+contract RuniverseItem is
+    ERC721Pausable,
+    Ownable,
+    ReentrancyGuard,
+    IRuniverseItem
+{
+    // TODO: Pause minting when specified.
+
+    /// @notice ddress of only-valid minter.
+    address public minterAddress;
 
     /// @notice The base URI for the metadata of the tokens
     string public baseTokenURI;
+
+    /// @notice Counter to track the number minted so far.
+    uint256 public numMinted = 0;
+
+    /// @notice Address zero error.
+    error Address0Error();
 
     /**
      * @dev Constructor of the contract.
      * @notice We pass the name and symbol to the ERC721 constructor.
      * @notice We set the valid signer address of contract.
      */
-    constructor(
-        address _signer,
-        string memory _baseURI
-    ) ERC721("RuniverseItem", "RITM") {
-        signer = _signer;
+    constructor(string memory _baseURI) ERC721("RuniverseItem", "RITM") {
         baseTokenURI = _baseURI;
     }
 
     /**
-     * @dev Sets the valid signer address of contract.
-     * @param _signer Address of the signer.
+     * @dev Pause contract.
      */
-    function setSigner(address _signer) external onlyOwner {
-        signer = _signer;
+    function pauseContract() external onlyOwner {
+        if (!this.paused()) {
+            _pause();
+        }
     }
 
     /**
-     * @dev Returns the signer address of contract.
-     * @return signer Address of the valid signer in contract.
+     * @dev Unpause contract.
      */
-    function getSigner() external view returns (address) {
-        return signer;
+    function unpauseContract() external onlyOwner {
+        if (this.paused()) {
+            _unpause();
+        }
+    }
+
+    /**
+     * @dev Mint a new token with a specific id.
+     * @param recipient address representing the owner of the new tokenId.
+     * @param tokenId uint256 ID of the token to be minted.
+     */
+    function mintTokenId(
+        address recipient,
+        uint256 tokenId
+    ) public override nonReentrant {
+        require(!paused(), "Minting is paused");
+
+        require(_msgSender() == minterAddress, "Minter address is not valid");
+
+        ++numMinted;
+        emit RuniverseItemMinted(recipient, tokenId);
+        _safeMint(recipient, tokenId);
     }
 
     /**
@@ -67,6 +99,14 @@ contract RuniverseItem is ERC721, Ownable {
     }
 
     /**
+     * @dev Returns the total number of minted items.
+     * @return totalSupply uint256 the number of minted items.
+     */
+    function totalSupply() external view returns (uint256) {
+        return numMinted;
+    }
+
+    /**
      * @dev Returns the base URI of the token.
      * @return baseTokenURI String value of base Token URI.
      */
@@ -83,118 +123,33 @@ contract RuniverseItem is ERC721, Ownable {
     }
 
     /**
-     * @dev Verifies if the signature corresponds to the signer.
-     * @param _message Message to verify with signature.
-     * @param _signature Signature used to verify the message.
-     * @return bool Returns if the signature is valid or not.
+     * @dev Sets a new minter address.
+     * @param newMinter Address of the new minter.
      */
-    function verify(
-        string memory _message,
-        bytes memory _signature
-    ) public view returns (bool) {
-        bytes32 messageHash = getMessageHash(_message);
-        bytes32 ethSignedMessageHash = getEthSignedMessageHash(messageHash);
-
-        return recover(ethSignedMessageHash, _signature) == signer;
+    function setMinter(address newMinter) external onlyOwner {
+        require(newMinter != address(0), "Invalid minter address");
+        minterAddress = newMinter;
     }
 
     /**
-     * @dev Returns the message hash that is signed to create the signature.
-     * @param _message Message to be hashed.
-     * @return bytes32 Hash of the message.
+     * @dev ETH should not be sent to this contract, but in the case that it is
+     * sent by accident, this function allows the owner to withdraw it.
      */
-    function getMessageHash(
-        string memory _message
-    ) public pure returns (bytes32) {
-        return keccak256(abi.encodePacked(_message));
+    function withdrawAll() external payable onlyOwner {
+        (bool success, ) = msg.sender.call{value: address(this).balance}("");
+        require(success, "withdraw was not succesfull");
     }
 
     /**
-     * @dev Returns the message hash that is signed to create the signature.
-     * @param _messageHash Hash of the message to be signed.
-     * @return bytes32 Hash of the message.
+     * @dev Again, ERC20s should not be sent to this contract, but if someone
+     * does, it's nice to be able to recover them.
+     * @param token IERC20 The token address.
+     * @param amount uint256 The amount to send.
      */
-    function getEthSignedMessageHash(
-        bytes32 _messageHash
-    ) public pure returns (bytes32) {
-        return
-            keccak256(
-                abi.encodePacked(
-                    "\x19Ethereum Signed Message:\n32",
-                    _messageHash
-                )
-            );
-    }
-
-    /**
-     * @dev Split signature and recover signer address.
-     * @param _ethSignedMessageHash Hash of the signed message.
-     * @param _signature Signature to split.
-     * @return address Address of the signer.
-     */
-    function recover(
-        bytes32 _ethSignedMessageHash,
-        bytes memory _signature
-    ) private pure returns (address) {
-        (bytes32 r, bytes32 s, uint8 v) = splitSignature(_signature);
-
-        return ecrecover(_ethSignedMessageHash, v, r, s);
-    }
-
-    /**
-     * @dev Split signature into `r`, `s` and `v` variables, used by recover method.
-     * @param _signature Signature to split.
-     * @return r
-     * @return s
-     * @return v
-     */
-    function splitSignature(
-        bytes memory _signature
-    ) internal pure returns (bytes32 r, bytes32 s, uint8 v) {
-        require(_signature.length == 65, "Invalid signature length!");
-
-        assembly {
-            // First 32 bytes stores the length of the signature
-            r := mload(add(_signature, 32))
-            // Next 32 bytes stores the length of the signature
-            s := mload(add(_signature, 64))
-            // Final byte stores the signature type
-            v := byte(0, mload(add(_signature, 96)))
+    function forwardERC20s(IERC20 token, uint256 amount) external onlyOwner {
+        if (address(msg.sender) == address(0)) {
+            revert Address0Error();
         }
-    }
-
-    /**
-     * @dev Method to verify a message and mint an RuniverseItem to an address. Used for public minting.
-     * @param signature Signature used to verify the message.
-     * @param tokenId ID of the token to be minted.
-     */
-    function verifyAndMint(bytes memory signature, uint256 tokenId) public {
-        string memory message = string.concat(
-            Strings.toHexString(msg.sender),
-            "_",
-            Strings.toString(tokenId)
-        );
-
-        require(this.verify(message, signature), "Bad signature");
-
-        _safeMint(msg.sender, tokenId);
-    }
-
-    /**
-     * @dev Method to mint many RuniverseItems and assign them to an addresses without any requirement. Used for private minting.
-     * @param tokenIds uint256[] Tokens to be transferred.
-     * @param recipients address[] Addresses where each token will be transferred.
-     */
-    function ownerMint(
-        uint256[] calldata tokenIds,
-        address[] calldata recipients
-    ) external onlyOwner {
-        require(
-            tokenIds.length == recipients.length,
-            "Arrays should have the same size"
-        );
-        for (uint256 i = 0; i < recipients.length; ++i) {
-            _safeMint(recipients[i], tokenIds[i]);
-        }
+        token.transfer(msg.sender, amount);
     }
 }
