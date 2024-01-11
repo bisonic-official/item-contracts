@@ -1,0 +1,141 @@
+"""Setup the contract."""
+
+import logging
+
+from utils.config import load_config
+from utils.config import setup_custom_logger
+from utils.contract import connect_to_web3
+from utils.contract import load_contract
+
+
+def set_token_uri(w3, contract, private_key, owner_address, token_uri):
+    """Set the vault address.
+
+    Parameters
+    ----------
+    w3 : Web3
+        The web3 object.
+    contract
+        The contract object.
+    private_key : str
+        The private key.
+    owner_address : str
+        The owner address.
+    token_uri : str
+        The token URI.
+
+    Returns
+    -------
+    txn : dict
+        The transaction dictionary.
+    """
+
+    logger = logging.getLogger('minter')
+
+    txn = contract.functions.setBaseURI(token_uri).build_transaction({
+        'nonce':
+        w3.eth.get_transaction_count(owner_address),
+        'gas':
+        1000000
+    })
+
+    # Sign the transaction
+    txn_signed = w3.eth.account.sign_transaction(txn, private_key)
+
+    # Send the transaction and wait for the transaction receipt
+    txn_hash = w3.eth.send_raw_transaction(txn_signed.rawTransaction)
+    txn_receipt = w3.eth.wait_for_transaction_receipt(txn_hash)
+    txn_receipt = txn_receipt.transactionHash.hex()
+
+    log_msg = f"TXN with hash: { txn_receipt }"
+    logger.info(log_msg)
+
+    return txn_receipt
+
+
+def set_signer_address(w3, contract, private_key, owner_address, signer):
+    """Set the vault address.
+
+    Parameters
+    ----------
+    w3 : Web3
+        The web3 object.
+    contract
+        The contract object.
+    private_key : str
+        The private key.
+    owner_address : str
+        The owner address.
+    signer : str
+        The signer address.
+
+    Returns
+    -------
+    txn : dict
+        The transaction dictionary.
+    """
+
+    logger = logging.getLogger('minter')
+
+    txn = contract.functions.setSigner(signer).build_transaction({
+        'nonce':
+        w3.eth.get_transaction_count(owner_address),
+        'gas':
+        800000,
+        'maxFeePerGas':
+        100000000,
+    })
+
+    # Sign the transaction
+    txn_signed = w3.eth.account.sign_transaction(txn, private_key)
+
+    # Send the transaction and wait for the transaction receipt
+    txn_hash = w3.eth.send_raw_transaction(txn_signed.rawTransaction)
+    txn_receipt = w3.eth.wait_for_transaction_receipt(txn_hash)
+    txn_receipt = txn_receipt.transactionHash.hex()
+
+    log_msg = f"TXN with hash: { txn_receipt }"
+    logger.info(log_msg)
+
+    return txn_receipt
+
+
+def main():
+    """The main function to mint and NFT."""
+
+    # Load config and setup logger
+    config = load_config('config_minter.ini')
+    logger = setup_custom_logger()
+
+    # Connect to web3
+    w3, status = connect_to_web3(network=config['network']['network'],
+                                 api_key=config['network']['api_key'])
+    private_key = config['account']['private_key']
+    address = config['account']['address']
+
+    if status:
+        connection_msg = 'Web3 connection successful!'
+        print(f'[INFO] {connection_msg}')
+        logger.info(connection_msg)
+
+        # Load the contract
+        contract = load_contract(w3, config['contract']['address'],
+                                 config['contract']['abi'])
+
+        # # Get the signer address before setup
+        # signer = contract.functions.getSigner().call()
+        # print(f'[INFO] Signer address: {signer}')
+
+        # # Set the signer address
+        # new_signer = ''
+        # txn_receipt = set_signer_address(w3, contract, private_key, address,
+        #                                  new_signer)
+        # print(f'[INFO] Transaction receipt: {txn_receipt}')
+
+        # Get the signer address after setup
+        signer = contract.functions.getSigner().call()
+        print(f'[INFO] Signer address: {signer}')
+
+
+if __name__ == '__main__':
+    main()

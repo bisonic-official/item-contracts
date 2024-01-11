@@ -53,7 +53,7 @@ def set_token_uri(w3, contract, private_key, owner_address, token_uri):
     return txn_receipt
 
 
-def set_signer_address(w3, contract, private_key, owner_address, signer):
+def set_minter_address(w3, contract, private_key, owner_address, minter):
     """Set the vault address.
 
     Parameters
@@ -77,7 +77,7 @@ def set_signer_address(w3, contract, private_key, owner_address, signer):
 
     logger = logging.getLogger('minter')
 
-    txn = contract.functions.setSigner(signer).build_transaction({
+    txn = contract.functions.setMinter(minter).build_transaction({
         'nonce':
         w3.eth.get_transaction_count(owner_address),
         'gas':
@@ -104,7 +104,7 @@ def main():
     """The main function to mint and NFT."""
 
     # Load config and setup logger
-    config = load_config('config.ini')
+    config = load_config('config_main.ini')
     logger = setup_custom_logger()
 
     # Connect to web3
@@ -137,18 +137,18 @@ def main():
         # print(f'[INFO] Base URI: {base_uri}')
 
         # # Get the signer address before setup
-        # signer = contract.functions.getSigner().call()
-        # print(f'[INFO] Signer address: {signer}')
+        # minter = contract.functions.minterAddress().call()
+        # print(f'[INFO] Minter address: {minter}')
 
-        # # Set the signer address
-        # new_signer = '0xCf01046a5290eb0f955a63825Bdb9c3ce8da79B3'
-        # txn_receipt = set_signer_address(w3, contract, private_key, address,
-        #                                  new_signer)
+        # # Set the minter address
+        # new_minter = ''
+        # txn_receipt = set_minter_address(w3, contract, private_key, address,
+        #                                  new_minter)
         # print(f'[INFO] Transaction receipt: {txn_receipt}')
 
-        # Get the signer address after setup
-        signer = contract.functions.getSigner().call()
-        print(f'[INFO] Signer address: {signer}')
+        # Get the minter address after setup
+        minter = contract.functions.minterAddress().call()
+        print(f'[INFO] Minter address: {minter}')
 
 
 if __name__ == '__main__':
