@@ -93,7 +93,7 @@ describe("🔥 Verify signer getter and setter", function () {
   });
 });
 
-describe("🔥 Verify signature + mint", function () {
+describe("🔥 Verify signature + mint + enumerability + burnability", function () {
   it("Check if signer matches with recovered signer", async function () {
     const [user, signer] = await ethers.getSigners();
 
@@ -166,6 +166,27 @@ describe("🔥 Verify signature + mint", function () {
     // Check if token was minted
     expect(await runiverseItem.ownerOf(token_id)).to.equal(user.address);
     expect(await runiverseItem.exists(token_id)).to.equal(true);
+
+    // Verify total supply with new minted token
+    const totalSupply = await runiverseItem.totalSupply();
+    const tokenByIndex = await runiverseItem.tokenByIndex(totalSupply - 1);
+    expect(tokenByIndex).to.equal(token_id);
+
+    // Get balance of signer (total of tokens minted by signer)
+    const balanceOf = await runiverseItem.balanceOf(user.address);
+    expect(balanceOf).to.equal(1);
+    
+    // Get token of owner by index
+    const tokenOfOwnerByIndex = await runiverseItem.tokenOfOwnerByIndex(
+      user.address, 0
+    );
+    expect(tokenOfOwnerByIndex).to.equal(token_id);
+
+    // Test burn function
+    await runiverseItem.burn(token_id);
+    expect(await runiverseItem.exists(token_id)).to.equal(false);
+    await expect(runiverseItem.ownerOf(token_id)).to.be.revertedWith("ERC721: invalid token ID");
+
   });
 
   it("Verify error when signer does not match", async function () {
@@ -229,9 +250,9 @@ describe("🔥 Verify signature + mint", function () {
   });
 });
 
-describe("🔥 Test pausing and unpausing contract", function () {
+describe("🔥 Test pausing and unpausing contract + burning tokens", function () {
   it("Pausing contract should pause minting", async function () {
-    const [user, signer] = await ethers.getSigners();
+    const [user, signer, hacker] = await ethers.getSigners();
 
     // Deploy contracts
     const RuniverseItem = await ethers.getContractFactory("RuniverseItem");
@@ -245,29 +266,66 @@ describe("🔥 Test pausing and unpausing contract", function () {
     );
     runiverseItem.setMinter(runiverseItemMinter.address);
     
-
     // Prepare token
-    const token_id = 123456789;
+    const burnable_token_id = 987654321;
     const { signature } = await generateSignature(
+      user.address,
+      burnable_token_id,
+      runiverseItemMinter,
+      signer
+    );
+    
+    // Verify signature and mint token
+    await runiverseItemMinter.verifyAndMint(
+      signature, burnable_token_id
+    );
+
+    // Verify only owner can pause contract minting
+    await expect(runiverseItem.connect(hacker).pauseContract()).to.be.revertedWith(
+      "Ownable: caller is not the owner"
+    );
+
+    // Pause contract minting
+    await runiverseItem.pauseContract();
+    
+    // Test burning not available when paused
+    await expect(
+      runiverseItem.burn(burnable_token_id)
+    ).to.be.revertedWith("ERC721Pausable: token transfer while paused");
+
+    // Prepare new token
+    const token_id = 123456789;
+    const new_signature = await generateSignature(
       user.address,
       token_id,
       runiverseItemMinter,
       signer
     );
 
-    // Pause contract minting
-    await runiverseItem.pauseContract();
-
-    // Should revert with paused minting
+    // Should revert with paused minting 
     await expect(
-      runiverseItemMinter.verifyAndMint(signature, token_id)
+      runiverseItemMinter.verifyAndMint(new_signature["signature"], token_id)
     ).to.be.revertedWith("Minting is paused");
+
+    // Verify only owner can unpause contract minting
+    await expect(runiverseItem.connect(hacker).unpauseContract()).to.be.revertedWith(
+      "Ownable: caller is not the owner"
+    );
 
     // Unpause contract minting
     await runiverseItem.unpauseContract();
 
+    // Verify only owner can burn tokens
+    await expect(runiverseItem.connect(hacker).burn(burnable_token_id)).to.be.revertedWith(
+      "ERC721: caller is not token owner or approved"
+    );
+
+    // Verify burnable token is burnable
+    await runiverseItem.burn(burnable_token_id);
+    expect(await runiverseItem.exists(burnable_token_id)).to.equal(false);
+
     // Verify signature and mint token
-    await runiverseItemMinter.verifyAndMint(signature, token_id);
+    await runiverseItemMinter.verifyAndMint(new_signature["signature"], token_id);
 
     // Check if token was minted
     expect(await runiverseItem.ownerOf(token_id)).to.equal(user.address);
@@ -275,7 +333,7 @@ describe("🔥 Test pausing and unpausing contract", function () {
   });
 });
 
-describe("🔥 Verify ownerMint function for private minting", function () {
+describe("🔥 Verify ownerMint function for private minting + enumerability + burnability", function () {
   it("Function ownerMint should mint several tokens", async function () {
     const [signer] = await ethers.getSigners();
 
@@ -293,7 +351,7 @@ describe("🔥 Verify ownerMint function for private minting", function () {
 
     // Test ownerMint function for several tokens
     await runiverseItemMinter.ownerMint(
-      [0, 1, 2, 3, 4],
+      [0, 4, 3, 1, 2], // Token IDs
       [
         signer.address,
         signer.address,
@@ -308,6 +366,35 @@ describe("🔥 Verify ownerMint function for private minting", function () {
       expect(await runiverseItem.ownerOf(i)).to.equal(signer.address);
       expect(await runiverseItem.exists(i)).to.equal(true);
     }
+
+    // Get total supply (total of tokens minted)
+    const totalSupply = await runiverseItem.totalSupply();
+    expect(totalSupply).to.equal(5);
+
+    // Get balance of signer (total of tokens minted by signer)
+    const balanceOf = await runiverseItem.balanceOf(signer.address);
+    expect(balanceOf).to.equal(5);
+    
+    // Get token of owner by index
+    const tokenOfOwnerByIndex = await runiverseItem.tokenOfOwnerByIndex(
+      signer.address, 1
+    );
+    expect(tokenOfOwnerByIndex).to.equal(4);
+
+    // Get token by index
+    const tokenByIndex = await runiverseItem.tokenByIndex(1);
+    expect(tokenByIndex).to.equal(4);
+
+    // Test minting with a new token ID
+    const newId = 123456789;
+    await runiverseItemMinter.ownerMint(
+      [newId],
+      [signer.address]
+    );
+
+    const newTotalSupply = await runiverseItem.totalSupply();
+    const newTokenByIndex = await runiverseItem.tokenByIndex(newTotalSupply - 1);
+    expect(newTokenByIndex).to.equal(newId);
   });
 
   it("Function ownerMint should revert with not matching arrays (in size)", async function () {

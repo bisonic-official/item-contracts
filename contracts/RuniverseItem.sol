@@ -3,13 +3,18 @@ pragma solidity ^0.8.18;
 
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Pausable.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "./IRuniverseItem.sol";
 
 contract RuniverseItem is
     ERC721Pausable,
+    ERC721Burnable,
+    ERC721Enumerable,
     Ownable,
     ReentrancyGuard,
     IRuniverseItem
@@ -56,6 +61,29 @@ contract RuniverseItem is
     }
 
     /**
+     * @dev Overrides _beforeTokenTransfer
+     * see {https://docs.openzeppelin.com/contracts/4.x/api/token/erc721#ERC721-_beforeTokenTransfer-address-address-uint256-uint256-}.
+     */
+    function _beforeTokenTransfer(
+        address from,
+        address to,
+        uint256 firstTokenId,
+        uint256 batchSize
+    ) internal override(ERC721, ERC721Pausable, ERC721Enumerable) {
+        super._beforeTokenTransfer(from, to, firstTokenId, batchSize);
+    }
+
+    /**
+     * @dev Overrides supportsInterface
+     * see {https://docs.openzeppelin.com/contracts/4.x/api/utils#IERC165-supportsInterface-bytes4-}.
+     */
+    function supportsInterface(
+        bytes4 interfaceId
+    ) public view virtual override(ERC721, ERC721Enumerable) returns (bool) {
+        return super.supportsInterface(interfaceId);
+    }
+
+    /**
      * @dev Mint a new token with a specific id.
      * @param recipient address representing the owner of the new tokenId.
      * @param tokenId uint256 ID of the token to be minted.
@@ -96,14 +124,6 @@ contract RuniverseItem is
      */
     function exists(uint256 tokenId) external view returns (bool) {
         return _exists(tokenId);
-    }
-
-    /**
-     * @dev Returns the total number of minted items.
-     * @return totalSupply uint256 the number of minted items.
-     */
-    function totalSupply() external view returns (uint256) {
-        return numMinted;
     }
 
     /**
