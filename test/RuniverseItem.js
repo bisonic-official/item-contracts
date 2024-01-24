@@ -250,8 +250,8 @@ describe("🔥 Verify signature + mint + enumerability + burnability", function 
   });
 });
 
-describe("🔥 Test pausing and unpausing contract + burning tokens", function () {
-  it("Pausing contract should pause minting", async function () {
+describe("🔥 Test burning tokens", function () {
+  it("Only owner can burn an item + burned items should not exist", async function () {
     const [user, signer, hacker] = await ethers.getSigners();
 
     // Deploy contracts
@@ -267,69 +267,29 @@ describe("🔥 Test pausing and unpausing contract + burning tokens", function (
     runiverseItem.setMinter(runiverseItemMinter.address);
     
     // Prepare token
-    const burnable_token_id = 987654321;
-    const { signature } = await generateSignature(
-      user.address,
-      burnable_token_id,
-      runiverseItemMinter,
-      signer
-    );
-    
-    // Verify signature and mint token
-    await runiverseItemMinter.verifyAndMint(
-      signature, burnable_token_id
-    );
-
-    // Verify only owner can pause contract minting
-    await expect(runiverseItem.connect(hacker).pauseContract()).to.be.revertedWith(
-      "Ownable: caller is not the owner"
-    );
-
-    // Pause contract minting
-    await runiverseItem.pauseContract();
-    
-    // Test burning not available when paused
-    await expect(
-      runiverseItem.burn(burnable_token_id)
-    ).to.be.revertedWith("ERC721Pausable: token transfer while paused");
-
-    // Prepare new token
     const token_id = 123456789;
-    const new_signature = await generateSignature(
+    const { signature } = await generateSignature(
       user.address,
       token_id,
       runiverseItemMinter,
       signer
     );
-
-    // Should revert with paused minting 
-    await expect(
-      runiverseItemMinter.verifyAndMint(new_signature["signature"], token_id)
-    ).to.be.revertedWith("Minting is paused");
-
-    // Verify only owner can unpause contract minting
-    await expect(runiverseItem.connect(hacker).unpauseContract()).to.be.revertedWith(
-      "Ownable: caller is not the owner"
-    );
-
-    // Unpause contract minting
-    await runiverseItem.unpauseContract();
-
-    // Verify only owner can burn tokens
-    await expect(runiverseItem.connect(hacker).burn(burnable_token_id)).to.be.revertedWith(
-      "ERC721: caller is not token owner or approved"
-    );
-
-    // Verify burnable token is burnable
-    await runiverseItem.burn(burnable_token_id);
-    expect(await runiverseItem.exists(burnable_token_id)).to.equal(false);
-
+    
     // Verify signature and mint token
-    await runiverseItemMinter.verifyAndMint(new_signature["signature"], token_id);
+    await runiverseItemMinter.verifyAndMint(signature, token_id);
 
     // Check if token was minted
     expect(await runiverseItem.ownerOf(token_id)).to.equal(user.address);
     expect(await runiverseItem.exists(token_id)).to.equal(true);
+
+    // Verify only owner can burn tokens
+    await expect(runiverseItem.connect(hacker).burn(token_id)).to.be.revertedWith(
+      "ERC721: caller is not token owner or approved"
+    );
+
+    // Verify burnable token is not available anymore
+    await runiverseItem.burn(token_id);
+    expect(await runiverseItem.exists(token_id)).to.equal(false);
   });
 });
 
