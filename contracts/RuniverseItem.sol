@@ -82,6 +82,24 @@ contract RuniverseItem is
     }
 
     /**
+     *
+     * @param ownerAddress address of owner.
+     * @return tokensOwned uint256 with IDs of owned tokens.
+     */
+    function getTokens(
+        address ownerAddress
+    ) public view returns (uint256[] memory) {
+        uint256 numTokensOwned = this.balanceOf(ownerAddress);
+        uint256[] memory tokensOwned = new uint256[](numTokensOwned);
+
+        for (uint256 index = 0; index < numTokensOwned; index++) {
+            tokensOwned[index] = this.tokenOfOwnerByIndex(ownerAddress, index);
+        }
+
+        return tokensOwned;
+    }
+
+    /**
      * @dev Mint a new token with a specific id.
      * @param recipient address representing the owner of the new tokenId.
      * @param tokenId uint256 ID of the token to be minted.

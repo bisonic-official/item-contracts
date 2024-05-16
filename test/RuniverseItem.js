@@ -120,7 +120,7 @@ describe("🔥 Verify signature + mint + enumerability", function () {
     expect(await runiverseItemMinter.verify(message, signature)).to.equal(true);
   });
 
-  it("Verify signer and mint token function", async function () {
+  it("Verify signer and mint token function + test enumerability", async function () {
     const [user, signer, hacker] = await ethers.getSigners();
 
     // Deploy contracts
@@ -181,6 +181,11 @@ describe("🔥 Verify signature + mint + enumerability", function () {
       user.address, 0
     );
     expect(tokenOfOwnerByIndex).to.equal(token_id);
+
+    // Test enumerablity
+    const tokensOwned = await runiverseItem.getTokens(user.address);
+    expect(tokensOwned.length).to.equal(1);
+
   });
 
   it("Verify error when signer does not match", async function () {
