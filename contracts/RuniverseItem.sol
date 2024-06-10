@@ -1,24 +1,20 @@
 //SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.18;
+pragma solidity ^0.8.19;
 
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Pausable.sol";
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
+import "./ERC721Common.sol";
 import "./IRuniverseItem.sol";
 
 contract RuniverseItem is
-    ERC721Pausable,
-    ERC721Enumerable,
+    ERC721Common,
     Ownable,
     ReentrancyGuard,
     IRuniverseItem
 {
-    // TODO: Pause minting when specified.
-
     /// @notice ddress of only-valid minter.
     address public minterAddress;
 
@@ -36,8 +32,11 @@ contract RuniverseItem is
      * @notice We pass the name and symbol to the ERC721 constructor.
      * @notice We set the valid signer address of contract.
      */
-    constructor(string memory _baseURI) ERC721("RuniverseItem", "RITM") {
+    constructor(
+        string memory _baseURI
+    ) ERC721Common("RuniverseItem", "RITM", _baseURI) {
         baseTokenURI = _baseURI;
+        _baseTokenURI = _baseURI;
     }
 
     /**
@@ -67,7 +66,7 @@ contract RuniverseItem is
         address to,
         uint256 firstTokenId,
         uint256 batchSize
-    ) internal override(ERC721Pausable, ERC721Enumerable) {
+    ) internal override(ERC721Common) {
         super._beforeTokenTransfer(from, to, firstTokenId, batchSize);
     }
 
@@ -77,7 +76,7 @@ contract RuniverseItem is
      */
     function supportsInterface(
         bytes4 interfaceId
-    ) public view virtual override(ERC721, ERC721Enumerable) returns (bool) {
+    ) public view virtual override(ERC721Common) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
 
@@ -154,8 +153,9 @@ contract RuniverseItem is
      * @dev Sets a new base URI
      * @param newBaseURI string the new token base URI
      */
-    function setBaseURI(string calldata newBaseURI) external onlyOwner {
+    function setNewBaseURI(string calldata newBaseURI) external onlyOwner {
         baseTokenURI = newBaseURI;
+        _baseTokenURI = newBaseURI;
     }
 
     /**

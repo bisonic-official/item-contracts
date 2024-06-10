@@ -435,7 +435,7 @@ describe("🔥 Verify URIs of RuniverseItems", function () {
 
     const newURI_data = new Array(baseURI, runiverseItem.address.toLowerCase(), "/");
     const newURI = newURI_data.join("");
-    await runiverseItem.setBaseURI(newURI);
+    await runiverseItem.setNewBaseURI(newURI);
 
     expect(await runiverseItem.getBaseURI()).to.equal(newURI);
   });
@@ -460,7 +460,7 @@ describe("🔥 Verify URIs of RuniverseItems", function () {
 
     const newURI_data = new Array(baseURI, runiverseItem.address.toLowerCase(), "/");
     const newURI = newURI_data.join("");
-    await runiverseItem.setBaseURI(newURI);
+    await runiverseItem.setNewBaseURI(newURI);
 
     // Mint token
     const token_id = 123456789;
@@ -501,7 +501,7 @@ describe("🔥 Verify URIs of RuniverseItems", function () {
 
     const newURI_data = new Array(baseURI, runiverseItem.address.toLowerCase(), "/");
     const newURI = newURI_data.join("");
-    await runiverseItem.setBaseURI(newURI);
+    await runiverseItem.setNewBaseURI(newURI);
 
     // Get minted token URI
     await expect(runiverseItem.tokenURI(123456789)).to.be.revertedWith(
