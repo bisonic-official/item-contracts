@@ -5,7 +5,7 @@ var fs = require('fs');
 async function main() {
     // Contract address and ABI
     const contractAddress = ''; // Contract address
-    const jsonFile = 'artifacts/contracts/RuniverseLandMinter.sol/RuniverseLandMinter.json';
+    const jsonFile = 'artifacts/contracts/RuniverseItemMinter.sol/RuniverseItemMinter.json';
     const parsed = JSON.parse(fs.readFileSync(jsonFile));
     const contractABI = parsed.abi;
 
