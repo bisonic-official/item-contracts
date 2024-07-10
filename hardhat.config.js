@@ -1,5 +1,6 @@
 require("@nomicfoundation/hardhat-toolbox");
 require('solidity-coverage');
+require('hardhat-contract-sizer');
 
 // Go to https://www.alchemyapi.io, sign up, create
 // a new App in its dashboard, and replace "KEY" with its key
@@ -13,7 +14,15 @@ const SEPOLIA_PRIVATE_KEY = "0x0000000000000000000000000000000000000000000000000
 
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
-  solidity: "0.8.19",
+  solidity: {
+    version: "0.8.19",
+    settings: {
+      optimizer: {
+        enabled: true,
+        runs: 200
+      }
+    }
+  },
   defaultNetwork: "hardhat",
   networks: {
     hardhat: {
@@ -22,6 +31,17 @@ module.exports = {
     goerli: {
       url: `https://eth-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}`,
       accounts: [SEPOLIA_PRIVATE_KEY]
+    },
+    ronin: {
+      chainId: 2020,
+      url: 'https://api.roninchain.com/rpc',
+      accounts: ['0x0000000000000000000000000000000000000000000000000000000000000000']
+    },
+    saigon: {
+      chainId: 2021,
+      url: 'https://saigon-testnet.roninchain.com/rpc',
+      gasPrice: 35000000000,
+      accounts: ['0x0000000000000000000000000000000000000000000000000000000000000000']
     }
   }
 };
