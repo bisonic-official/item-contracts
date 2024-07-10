@@ -1,6 +1,7 @@
 require("@nomicfoundation/hardhat-toolbox");
 require('solidity-coverage');
 require('hardhat-contract-sizer');
+require('hardhat-deploy');
 
 // Go to https://www.alchemyapi.io, sign up, create
 // a new App in its dashboard, and replace "KEY" with its key
@@ -23,6 +24,9 @@ module.exports = {
       }
     }
   },
+  namedAccounts: {
+    deployer: 'privatekey://0x0000000000000000000000000000000000000000000000000000000000000000',
+  },
   defaultNetwork: "hardhat",
   networks: {
     hardhat: {
@@ -35,13 +39,12 @@ module.exports = {
     ronin: {
       chainId: 2020,
       url: 'https://api.roninchain.com/rpc',
-      accounts: ['0x0000000000000000000000000000000000000000000000000000000000000000']
+      gasPrice: 20_000_000_000,
     },
     saigon: {
       chainId: 2021,
       url: 'https://saigon-testnet.roninchain.com/rpc',
-      gasPrice: 35000000000,
-      accounts: ['0x0000000000000000000000000000000000000000000000000000000000000000']
+      gasPrice: 20_000_000_000,
     }
   }
 };
