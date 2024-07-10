@@ -32,15 +32,19 @@ async function main() {
 
     // Set new URI for Tokens
     const newBaseURI = '' // New URI
-    transaction = await contractWithSigner.setNewBaseURI(newBaseURI);
+    transaction = await contractWithSigner.setNewBaseURI(
+        newBaseURI, { gasPrice: 30000000000 }
+    );
     await transaction.wait();
     console.log("New base URI set:", await contract.getBaseURI());
 
     // Set new minter address
     const newMinter = '' // New minter address
-    transaction = await contractWithSigner.setMinter(newMinter);
+    transaction = await contractWithSigner.setMinter(
+        newMinter, { gasPrice: 30000000000 }
+    );
     await transaction.wait();
-    console.log("New minter set:", await contract.minterAddress);
+    console.log("New minter set:", await contract.minterAddress());
 }
 
 main()

@@ -1,7 +1,8 @@
 # Extras
 .DS_Store
-cache/
-coverage*
+cache
+deployments
+coverage
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
