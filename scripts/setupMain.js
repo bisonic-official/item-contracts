@@ -21,12 +21,16 @@ async function main() {
     const contractWithSigner = contract.connect(signer);
 
     // Pause contract
-    let transaction = await contractWithSigner.pauseContract();
+    let transaction = await contractWithSigner.pauseContract(
+        { gasPrice: 30000000000 }
+    );
     await transaction.wait();
     console.log("Contract paused!");
 
     // Unpause contract
-    transaction = await contractWithSigner.unpauseContract();
+    transaction = await contractWithSigner.unpauseContract(
+        { gasPrice: 30000000000 }
+    );
     await transaction.wait();
     console.log("Contract unpaused!");
 
@@ -45,6 +49,14 @@ async function main() {
     );
     await transaction.wait();
     console.log("New minter set:", await contract.minterAddress());
+
+    // Mint token
+    const tokenId = 0;
+    const recipient = '';
+    transaction = await contractWithSigner.mintTokenId(
+        recipient, tokenId, { gasPrice: 30000000000 }
+    );
+    console.log("Minted token:", tokenId);
 }
 
 main()

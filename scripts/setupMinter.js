@@ -23,7 +23,8 @@ async function main() {
     // Owner mint
     let transaction = await contractWithSigner.ownerMint(
         [], // tokenIds
-        [] // recipients
+        [], // recipients
+        { gasPrice: 30000000000, gasLimit: 1000000 }
     );
     await transaction.wait();
     console.log("Owner mint performed!");
