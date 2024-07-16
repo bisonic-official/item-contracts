@@ -38,6 +38,8 @@ def connect_to_web3(network='goerli', api_key=None):
         url = 'https://arb-sepolia.g.alchemy.com/v2/' + api_key
     elif network in ['main-arb', 'main-arbitrum']:
         url = 'https://arb-mainnet.g.alchemy.com/v2/' + api_key
+    elif network in ['saigon']:
+        url = 'https://api-gateway.skymavis.com/rpc/testnet?apikey=' + api_key
     else:
         raise ValueError('Invalid network')
 
