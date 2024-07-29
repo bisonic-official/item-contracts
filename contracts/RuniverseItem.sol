@@ -24,6 +24,9 @@ contract RuniverseItem is
     /// @notice Counter to track the number minted so far.
     uint256 public numMinted = 0;
 
+    /// @notice Pausable items map<tag, bool>
+    mapping(uint256 => bool) private pausedToken;
+
     /// @notice Address zero error.
     error Address0Error();
 
@@ -58,6 +61,44 @@ contract RuniverseItem is
     }
 
     /**
+     * @dev Pause/unpause Items.
+     * @param tag uint256 the tag/type of Item.
+     * @param paused bool the value to be set.
+     */
+    function pauseItem(uint256 tag, bool paused) external onlyOwner {
+        pausedToken[tag] = paused;
+    }
+
+    /**
+     * @dev Pause/unpause Items in batches.
+     * @param tags uint256[] the tags/types of Items.
+     * @param paused bool[] the values to be set.
+     */
+    function pauseItemsBatch(
+        uint256[] calldata tags,
+        bool[] calldata paused
+    ) external onlyOwner {
+        require(
+            tags.length == paused.length,
+            "Arrays should have the same length"
+        );
+        for (uint256 i; i < tags.length; ++i) {
+            pausedToken[tags[i]] = paused[i];
+        }
+    }
+
+    /**
+     * @dev Verify if Item is paused.
+     * @param tokenId uint256 Token Id to be verified.
+     */
+    function isItemPaused(
+        uint256 tokenId
+    ) internal view onlyOwner returns (bool) {
+        uint256 tag = tokenId >> (24 * 4);
+        return pausedToken[tag];
+    }
+
+    /**
      * @dev Overrides _beforeTokenTransfer
      * see {https://docs.openzeppelin.com/contracts/4.x/api/token/erc721#ERC721-_beforeTokenTransfer-address-address-uint256-uint256-}.
      */
@@ -78,6 +119,46 @@ contract RuniverseItem is
         bytes4 interfaceId
     ) public view virtual override(ERC721Common) returns (bool) {
         return super.supportsInterface(interfaceId);
+    }
+
+    /**
+     * @dev Overrides _mint.
+     */
+    function _mint(address to, uint256 tokenId) internal override {
+        require(!isItemPaused(tokenId), "Item is paused");
+        super._mint(to, tokenId);
+    }
+
+    /**
+     * @dev Overrides _transfer.
+     */
+    function _transfer(
+        address from,
+        address to,
+        uint256 tokenId
+    ) internal override {
+        require(!isItemPaused(tokenId), "Item is paused");
+        super._transfer(from, to, tokenId);
+    }
+
+    /**
+     * @dev Overrides transferFrom.
+     */
+    function transferFrom(
+        address from,
+        address to,
+        uint256 tokenId
+    ) public virtual override(ERC721, IERC721) {
+        require(!isItemPaused(tokenId), "Item is paused");
+        super.transferFrom(from, to, tokenId);
+    }
+
+    /**
+     * @dev Overrides _burn.
+     */
+    function _burn(uint256 tokenId) internal override {
+        require(!isItemPaused(tokenId), "Item is paused");
+        super._burn(tokenId);
     }
 
     /**
@@ -108,8 +189,9 @@ contract RuniverseItem is
         uint256 tokenId
     ) public override nonReentrant {
         require(!paused(), "Minting is paused");
-
         require(_msgSender() == minterAddress, "Minter address is not valid");
+
+        require(!isItemPaused(tokenId), "Item is paused");
 
         ++numMinted;
         emit RuniverseItemMinted(recipient, tokenId);
