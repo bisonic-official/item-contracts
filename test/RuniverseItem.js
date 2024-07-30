@@ -274,7 +274,7 @@ describe("🔥 Test pausing and unpausing contract", function () {
       signer
     );
 
-    // Mint befor pausing contract 
+    // Mint before pausing contract 
     runiverseItemMinter.verifyAndMint(
       before_signature["signature"],
       before_token_id
@@ -315,6 +315,66 @@ describe("🔥 Test pausing and unpausing contract", function () {
 
     // Check if token was minted
     expect(await runiverseItem.ownerOf(token_id)).to.equal(user.address);
+    expect(await runiverseItem.exists(token_id)).to.equal(true);
+  });
+
+  it("Individual pausing should work per Token type", async function () {
+    const [user, signer, new_owner] = await ethers.getSigners();
+
+    // Deploy contracts
+    const RuniverseItem = await ethers.getContractFactory("RuniverseItem");
+    const runiverseItem = await RuniverseItem.deploy(
+      "https://testnets.opensea.io/assets/arbitrum-goerli/"
+    );
+
+    const RuniverseItemMinter = await ethers.getContractFactory("RuniverseItemMinter");
+    const runiverseItemMinter = await RuniverseItemMinter.deploy(
+      runiverseItem.address, signer.address
+    );
+    runiverseItem.setMinter(runiverseItemMinter.address);
+
+    // Prepare new token
+    const token_id = 2469777655453455634692290178366975519697639599971058388045n; // Sample token id
+    const signature = await generateSignature(
+      user.address,
+      token_id,
+      runiverseItemMinter,
+      signer
+    );
+
+    // Mint before pausing contract
+    runiverseItemMinter.verifyAndMint(
+      signature["signature"],
+      token_id
+    );
+
+    // Check if token was minted
+    expect(await runiverseItem.ownerOf(token_id)).to.equal(user.address);
+    expect(await runiverseItem.exists(token_id)).to.equal(true);
+
+    // Token items should not be paused
+    expect(await runiverseItem.isItemPaused(token_id)).to.equal(false);
+
+    // Pause individual token type and verify it is paused
+    const tag = token_id >> 96n;
+    await runiverseItem.pauseItem(tag, true);
+    expect(await runiverseItem.isItemPaused(token_id)).to.equal(true);
+
+    // Test blocked transferFrom
+    await expect(
+      runiverseItem.transferFrom(user.address, new_owner.address, token_id)
+    ).to.be.revertedWith("Item is paused");
+    // _transfer and _burn are internals, so there's no need to be tested
+
+    // Test pauseItemsBatch
+    const tags = [tag, tag, tag];
+    const paused = [false, true, false];
+    await runiverseItem.pauseItemsBatch(tags, paused);
+    expect(await runiverseItem.isItemPaused(token_id)).to.equal(false); // Last one is false
+
+    // Now transfer the token and verify ownership
+    await runiverseItem.transferFrom(user.address, new_owner.address, token_id);
+    expect(await runiverseItem.ownerOf(token_id)).to.equal(new_owner.address);
     expect(await runiverseItem.exists(token_id)).to.equal(true);
   });
 });

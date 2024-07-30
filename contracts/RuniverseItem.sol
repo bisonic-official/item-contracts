@@ -82,7 +82,7 @@ contract RuniverseItem is
             tags.length == paused.length,
             "Arrays should have the same length"
         );
-        for (uint256 i; i < tags.length; ++i) {
+        for (uint256 i = 0; i < tags.length; ++i) {
             pausedToken[tags[i]] = paused[i];
         }
     }
@@ -91,9 +91,7 @@ contract RuniverseItem is
      * @dev Verify if Item is paused.
      * @param tokenId uint256 Token Id to be verified.
      */
-    function isItemPaused(
-        uint256 tokenId
-    ) internal view onlyOwner returns (bool) {
+    function isItemPaused(uint256 tokenId) public view returns (bool) {
         uint256 tag = tokenId >> (24 * 4);
         return pausedToken[tag];
     }
@@ -119,14 +117,6 @@ contract RuniverseItem is
         bytes4 interfaceId
     ) public view virtual override(ERC721Common) returns (bool) {
         return super.supportsInterface(interfaceId);
-    }
-
-    /**
-     * @dev Overrides _mint.
-     */
-    function _mint(address to, uint256 tokenId) internal override {
-        require(!isItemPaused(tokenId), "Item is paused");
-        super._mint(to, tokenId);
     }
 
     /**
@@ -190,8 +180,6 @@ contract RuniverseItem is
     ) public override nonReentrant {
         require(!paused(), "Minting is paused");
         require(_msgSender() == minterAddress, "Minter address is not valid");
-
-        require(!isItemPaused(tokenId), "Item is paused");
 
         ++numMinted;
         emit RuniverseItemMinted(recipient, tokenId);
