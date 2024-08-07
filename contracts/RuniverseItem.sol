@@ -106,6 +106,7 @@ contract RuniverseItem is
         uint256 firstTokenId,
         uint256 batchSize
     ) internal override(ERC721Common) {
+        require(!isItemPaused(firstTokenId), "Item is paused");
         super._beforeTokenTransfer(from, to, firstTokenId, batchSize);
     }
 
