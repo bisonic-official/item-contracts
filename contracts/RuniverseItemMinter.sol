@@ -193,7 +193,7 @@ contract RuniverseItemMinter is Ownable, ReentrancyGuard {
      * @dev Method to unlock tokens.
      * @param tokenIds[] ID of the token to be minted.
      */
-    function unlockTokens(uint256[] memory tokenIds) public {
+    function unlockTokens(uint256[] memory tokenIds) public onlyOwner {
         for (uint256 i = 0; i < tokenIds.length; i++) {
             emit TokenUnlocked(tokenIds[i], address(runiverseItem));
         }
