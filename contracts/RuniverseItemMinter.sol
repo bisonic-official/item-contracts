@@ -22,6 +22,18 @@ contract RuniverseItemMinter is Ownable, ReentrancyGuard {
     /// @notice Address zero error.
     error Address0Error();
 
+    /// @notice Adds locked item event.
+    event TokenLocked(
+        uint256 indexed tokenId,
+        address indexed approvedContract
+    );
+
+    /// @notice Adds unlocked item event.
+    event TokenUnlocked(
+        uint256 indexed tokenId,
+        address indexed approvedContract
+    );
+
     /**
      * @dev Create the contract and set the initial baseURI.
      * @param _runiverseItem Address the initial base URI for the token metadata URL.
@@ -153,6 +165,10 @@ contract RuniverseItemMinter is Ownable, ReentrancyGuard {
         require(this.verify(message, signature), "Bad signature");
 
         runiverseItem.mintTokenId(msg.sender, tokenId);
+
+        if (runiverseItem.isItemPaused(tokenId)) {
+            emit TokenLocked(tokenId, address(runiverseItem));
+        }
     }
 
     /**
@@ -170,6 +186,16 @@ contract RuniverseItemMinter is Ownable, ReentrancyGuard {
         );
         for (uint256 i = 0; i < recipients.length; ++i) {
             runiverseItem.mintTokenId(recipients[i], tokenIds[i]);
+        }
+    }
+
+    /**
+     * @dev Method to unlock tokens.
+     * @param tokenIds[] ID of the token to be minted.
+     */
+    function unlockTokens(uint256[] memory tokenIds) public {
+        for (uint256 i = 0; i < tokenIds.length; i++) {
+            emit TokenUnlocked(tokenIds[i], address(runiverseItem));
         }
     }
 

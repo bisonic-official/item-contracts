@@ -43,7 +43,7 @@ contract RuniverseItem is
     }
 
     /**
-     * @dev Pause contract.
+     * @dev Pause minting in contract.
      */
     function pauseContract() external onlyOwner {
         if (!this.paused()) {
@@ -52,7 +52,7 @@ contract RuniverseItem is
     }
 
     /**
-     * @dev Unpause contract.
+     * @dev Unpause minting in contract.
      */
     function unpauseContract() external onlyOwner {
         if (this.paused()) {
@@ -91,7 +91,7 @@ contract RuniverseItem is
      * @dev Verify if Item is paused.
      * @param tokenId uint256 Token Id to be verified.
      */
-    function isItemPaused(uint256 tokenId) public view returns (bool) {
+    function isItemPaused(uint256 tokenId) external view returns (bool) {
         uint256 tag = tokenId >> (24 * 4);
         return pausedToken[tag];
     }
@@ -106,7 +106,9 @@ contract RuniverseItem is
         uint256 firstTokenId,
         uint256 batchSize
     ) internal override(ERC721Common) {
-        require(!isItemPaused(firstTokenId), "Item is paused");
+        if (from != address(0)) {
+            require(!this.isItemPaused(firstTokenId), "Item is paused");
+        }
         super._beforeTokenTransfer(from, to, firstTokenId, batchSize);
     }
 
@@ -128,7 +130,7 @@ contract RuniverseItem is
         address to,
         uint256 tokenId
     ) internal override {
-        require(!isItemPaused(tokenId), "Item is paused");
+        require(!this.isItemPaused(tokenId), "Item is paused");
         super._transfer(from, to, tokenId);
     }
 
@@ -140,7 +142,7 @@ contract RuniverseItem is
         address to,
         uint256 tokenId
     ) public virtual override(ERC721, IERC721) {
-        require(!isItemPaused(tokenId), "Item is paused");
+        require(!this.isItemPaused(tokenId), "Item is paused");
         super.transferFrom(from, to, tokenId);
     }
 
@@ -148,7 +150,7 @@ contract RuniverseItem is
      * @dev Overrides _burn.
      */
     function _burn(uint256 tokenId) internal override {
-        require(!isItemPaused(tokenId), "Item is paused");
+        require(!this.isItemPaused(tokenId), "Item is paused");
         super._burn(tokenId);
     }
 

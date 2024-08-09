@@ -342,16 +342,6 @@ describe("🔥 Test pausing and unpausing contract", function () {
       signer
     );
 
-    // Mint before pausing contract
-    runiverseItemMinter.verifyAndMint(
-      signature["signature"],
-      token_id
-    );
-
-    // Check if token was minted
-    expect(await runiverseItem.ownerOf(token_id)).to.equal(user.address);
-    expect(await runiverseItem.exists(token_id)).to.equal(true);
-
     // Token items should not be paused
     expect(await runiverseItem.isItemPaused(token_id)).to.equal(false);
 
@@ -359,6 +349,16 @@ describe("🔥 Test pausing and unpausing contract", function () {
     const tag = token_id >> 96n;
     await runiverseItem.pauseItem(tag, true);
     expect(await runiverseItem.isItemPaused(token_id)).to.equal(true);
+
+    // Mint pausing paused item
+    await runiverseItemMinter.verifyAndMint(
+      signature["signature"],
+      token_id
+    );
+
+    // Check if token was minted
+    expect(await runiverseItem.ownerOf(token_id)).to.equal(user.address);
+    expect(await runiverseItem.exists(token_id)).to.equal(true);
 
     // Test blocked transferFrom
     await expect(
