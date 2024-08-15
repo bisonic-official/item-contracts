@@ -30,6 +30,18 @@ contract RuniverseItem is
     /// @notice Address zero error.
     error Address0Error();
 
+    /// @notice Adds locked item event.
+    event TokenLocked(
+        uint256 indexed tokenId,
+        address indexed approvedContract
+    );
+
+    /// @notice Adds unlocked item event.
+    event TokenUnlocked(
+        uint256 indexed tokenId,
+        address indexed approvedContract
+    );
+
     /**
      * @dev Constructor of the contract.
      * @notice We pass the name and symbol to the ERC721 constructor.
@@ -177,16 +189,33 @@ contract RuniverseItem is
      * @param recipient address representing the owner of the new tokenId.
      * @param tokenId uint256 ID of the token to be minted.
      */
+    function mintTokenId(address recipient, uint256 tokenId) public {
+        mintTokenId(recipient, tokenId, false);
+    }
+
+    /**
+     * @dev Mint a new token with a specific id.
+     * @param recipient address representing the owner of the new tokenId.
+     * @param tokenId uint256 ID of the token to be minted.
+     * @param lock bool Specifies if the token is locked to emit event.
+     */
     function mintTokenId(
         address recipient,
-        uint256 tokenId
-    ) public override nonReentrant {
+        uint256 tokenId,
+        bool lock
+    ) public virtual nonReentrant {
         require(!paused(), "Minting is paused");
         require(_msgSender() == minterAddress, "Minter address is not valid");
 
         ++numMinted;
         emit RuniverseItemMinted(recipient, tokenId);
         _safeMint(recipient, tokenId);
+
+        if (lock) {
+            if (this.isItemPaused(tokenId)) {
+                emit TokenLocked(tokenId, address(this));
+            }
+        }
     }
 
     /**
@@ -212,6 +241,16 @@ contract RuniverseItem is
      */
     function exists(uint256 tokenId) external view returns (bool) {
         return _exists(tokenId);
+    }
+
+    /**
+     * @dev Method to unlock tokens.
+     * @param tokenIds[] ID of the token to be minted.
+     */
+    function unlockTokens(uint256[] memory tokenIds) public onlyOwner {
+        for (uint256 i = 0; i < tokenIds.length; i++) {
+            emit TokenUnlocked(tokenIds[i], address(this));
+        }
     }
 
     /**

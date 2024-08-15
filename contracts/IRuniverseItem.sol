@@ -8,6 +8,4 @@ interface IRuniverseItem {
     event RuniverseItemMinted(address to, uint256 tokenId);
 
     function mintTokenId(address recipient, uint256 tokenId) external;
-
-    function isItemPaused(uint256 tokenId) external returns (bool);
 }
