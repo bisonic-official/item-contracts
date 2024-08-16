@@ -8,4 +8,10 @@ interface IRuniverseItem {
     event RuniverseItemMinted(address to, uint256 tokenId);
 
     function mintTokenId(address recipient, uint256 tokenId) external;
+
+    function mintTokenId(
+        address recipient,
+        uint256 tokenId,
+        bool lock
+    ) external;
 }

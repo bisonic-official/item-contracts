@@ -152,7 +152,7 @@ contract RuniverseItemMinter is Ownable, ReentrancyGuard {
 
         require(this.verify(message, signature), "Bad signature");
 
-        runiverseItem.mintTokenId(msg.sender, tokenId);
+        runiverseItem.mintTokenId(msg.sender, tokenId, true);
     }
 
     /**
