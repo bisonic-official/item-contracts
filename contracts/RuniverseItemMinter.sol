@@ -10,6 +10,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
+import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "./IRuniverseItem.sol";
 
 contract RuniverseItemMinter is Ownable, ReentrancyGuard {
@@ -113,7 +114,13 @@ contract RuniverseItemMinter is Ownable, ReentrancyGuard {
     ) private pure returns (address) {
         (bytes32 r, bytes32 s, uint8 v) = splitSignature(_signature);
 
-        return ecrecover(_ethSignedMessageHash, v, r, s);
+        (address recovered, ECDSA.RecoverError err) = ECDSA.tryRecover(
+            _ethSignedMessageHash,
+            v,
+            r,
+            s
+        );
+        return recovered;
     }
 
     /**
