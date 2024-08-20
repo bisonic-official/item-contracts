@@ -318,7 +318,7 @@ describe("🔥 Test pausing and unpausing contract", function () {
     expect(await runiverseItem.exists(token_id)).to.equal(true);
   });
 
-  it("Individual pausing should work per Token type", async function () {
+  it("Individual pausing and lock should work per Token type", async function () {
     const [user, signer, new_owner] = await ethers.getSigners();
 
     // Deploy contracts
@@ -350,7 +350,7 @@ describe("🔥 Test pausing and unpausing contract", function () {
     await runiverseItem.pauseItem(tag, true);
     expect(await runiverseItem.isItemPaused(token_id)).to.equal(true);
 
-    // Mint pausing paused item
+    // Mint paused item
     await runiverseItemMinter.verifyAndMint(
       signature["signature"],
       token_id
@@ -365,6 +365,29 @@ describe("🔥 Test pausing and unpausing contract", function () {
       runiverseItem.transferFrom(user.address, new_owner.address, token_id)
     ).to.be.revertedWith("Item is paused");
     // _transfer and _burn are internals, so there's no need to be tested
+
+    // Prepare new token
+    const token_id_new = 2469777655453455634692290178366975519697639599971058388046n; // New sample token id
+    const signature_new = await generateSignature(
+      user.address,
+      token_id_new,
+      runiverseItemMinter,
+      signer
+    );
+
+    // Verify token does not exists
+    expect(await runiverseItem.exists(token_id_new)).to.equal(false);
+
+    // Mint paused item
+    await runiverseItemMinter.verifyAndMint(
+      signature_new["signature"],
+      token_id_new
+    );
+
+    // Check if token was minted
+    expect(await runiverseItem.ownerOf(token_id_new)).to.equal(user.address);
+    expect(await runiverseItem.exists(token_id_new)).to.equal(true);
+    expect(await runiverseItem.isItemPaused(token_id_new)).to.equal(true);
 
     // Test pauseItemsBatch
     const tags = [tag, tag, tag];
